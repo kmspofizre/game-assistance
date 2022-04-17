@@ -13,13 +13,13 @@ db_session.global_init("db/content.db")
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('main_page.html')
+    return render_template('main_page.html', title='Game Helper')
 
 
 @app.route('/register')
 def register():
     reg_form = UserForm()
-    return render_template('registration.html', reg_form=reg_form)
+    return render_template('registration.html', reg_form=reg_form, title='Registration')
 
 
 def main():
