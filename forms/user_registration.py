@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, FileField
+from wtforms import StringField, IntegerField, FileField, SubmitField
 from wtforms.validators import DataRequired
 
 
@@ -10,3 +10,4 @@ class UserForm(FlaskForm):
     password = StringField('Password', validators=[DataRequired()])
     repeat_password = StringField('Repeat password', validators=[DataRequired()])
     profile_picture = FileField('Profile picture')
+    submit = SubmitField('Регистрация')

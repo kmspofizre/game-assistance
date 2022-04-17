@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect
 from data import db_session
+from forms.user_registration import UserForm
 
 
 app = Flask(__name__)
@@ -17,7 +18,8 @@ def index():
 
 @app.route('/register')
 def register():
-    pass
+    reg_form = UserForm()
+    return render_template('registration.html', reg_form=reg_form)
 
 
 def main():
