@@ -12,7 +12,7 @@ body{
     background-color: #17806d;
     padding-left: 8px;
     padding-right: 8px;
-    max-width: 956px;
+    max-width: 992px;
     margin: auto;
     display: flex;
 }
@@ -68,4 +68,9 @@ body{
         padding-left: 8px;
         padding-right: 8px;
     }
+}
+
+
+.new-text{
+    text-indent: 10px;
 }
