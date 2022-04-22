@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect
 from data import db_session
 from forms.user_registration import UserForm
+from forms.news_form import NewsForm
 
 
 app = Flask(__name__)
@@ -32,6 +33,12 @@ def new():
 <p class="new-text"></p>
 """
     return render_template('certain_news.html', text=to_render)
+
+
+@app.route('/add_news')
+def add_news():
+    news_form = NewsForm()
+    return render_template('add_news.html', title='News', news_form=news_form)
 
 
 def main():
