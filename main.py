@@ -7,15 +7,28 @@ from forms.user_registration import UserForm
 from data.users import User
 from data.news import News
 from forms.news_form import NewsForm
+from flask_login import LoginManager, login_required
+import csv
+from mail_sender import send_email
+from dotenv import load_dotenv
 
 
 app = Flask(__name__)
+load_dotenv()
 
 ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg', 'docx'}  # для проверки расширения файла
 app.config['UPLOAD_FOLDER'] = "static\img"
 app.config['UPLOAD_NEWS_FOLDER'] = "static/news"
 app.config['SECRET_KEY'] = 'nnwllknwthscd'
 db_session.global_init("db/content.db")
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+with open('mails.csv', encoding='utf-8') as mails_file:
+    mails = csv.DictReader(mails_file, delimiter=',', quotechar='"')
+    required = list(filter(lambda x: x['почтовый домен'] == 'mail.ru', mails))
+    print(required[0]['адрес для входа в почту'])
 
 
 def allowed_file(filename):  # для проверки расширения файла
@@ -93,6 +106,19 @@ def add_news():
         db_sess.add(news)
         db_sess.commit()
     return render_template('add_news.html', title='News', news_form=news_form)
+
+
+def post_form():
+    email = ''
+    if send_email(email, 'Email verification', 'link', []):  # отправляем на нее письмо
+        return f'Письмо отправлено успешно на адрес {email}'
+    return f'Во время отправки письма на адрес {email} произошла ошибка'
+
+
+@app.route('/check_email/<hashed_code>')
+@login_required
+def check_email(hashed_code):
+    pass
 
 
 def main():
