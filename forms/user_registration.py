@@ -9,5 +9,4 @@ class UserForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired()])
     password = StringField('Password', validators=[DataRequired()])
     repeat_password = StringField('Repeat password', validators=[DataRequired()])
-    profile_picture = FileField('Profile picture')
     submit = SubmitField('Регистрация')

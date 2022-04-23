@@ -1,6 +1,5 @@
 from docx import Document
 
-
 def text_handler(doc):
     document = Document(doc)
     data = document.paragraphs
@@ -19,7 +18,4 @@ def text_handler(doc):
             output.append(f'<h3>{elem.text}</h3>')
         else:
             output.append(f'<p class="new-text">{elem.text}</p>')
-    print('\n'.join(output))
-
-
-text_handler('example.docx')
+    return '\n'.join(output)

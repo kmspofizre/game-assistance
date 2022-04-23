@@ -17,10 +17,6 @@ class Comment(SqlAlchemyBase):
                                 sqlalchemy.ForeignKey("theme.id"))
     main_theme = orm.relation('Theme')
 
-    tag_id = sqlalchemy.Column(sqlalchemy.Integer,
-                               sqlalchemy.ForeignKey("tag.id"))
-    tag = orm.relation("Tag")
-
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
     user = orm.relation('User')

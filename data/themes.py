@@ -13,10 +13,6 @@ class Theme(SqlAlchemyBase):
     image = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # json
     date_of_creation = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
 
-    tag_id = sqlalchemy.Column(sqlalchemy.Integer,
-                               sqlalchemy.ForeignKey("tag.id"))
-    tag = orm.relation("Tag")
-
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
     user = orm.relation('User')
