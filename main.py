@@ -17,10 +17,11 @@ app = Flask(__name__)
 load_dotenv()
 
 ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg', 'docx'}  # для проверки расширения файла
-app.config['UPLOAD_FOLDER'] = "static\img"
+app.config['UPLOAD_FOLDER'] = "cgi-bin/static/img"
 app.config['UPLOAD_NEWS_FOLDER'] = "static/news"
 app.config['SECRET_KEY'] = 'nnwllknwthscd'
 db_session.global_init("db/content.db")
+db_sess = db_session.create_session()
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -36,6 +37,12 @@ def allowed_file(filename):  # для проверки расширения фа
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    db_sess = db_session.create_session()
+    return db_sess.query(User).get(user_id)
+
+
 @app.route('/')
 @app.route('/index')
 def index():
@@ -46,28 +53,20 @@ def index():
 def registration():
     form = UserForm()
     if request.method == "POST":
-        db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template("registration.html", form=form, error="Такой пользователь уже существует")
         if form.password.data != form.repeat_password.data:
-            return render_template("registration.html", form=form, error="пароль")
-        print("qwe")
+            return render_template("registration.html", form=form, error="Пароли не совпадают")
         file = request.files['file']
-        print("123")
         user = User(
             age=form.birthday.data,
             name=form.name.data,
-            email=form.email.data,
-
+            email=form.email.data
         )
         if file and allowed_file(file.filename):
-            print("hello")
-            filename = secure_filename(file.filename)
-            print("hello2")
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            print("hello3")
-            user.profile_picture = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            print("hello4")
+            # filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+            user.profile_picture = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -85,7 +84,6 @@ def registration():
 def add_news():
     news_form = NewsForm()
     if request.method == "POST":
-        db_sess = db_session.create_session()
         img = request.files['news_img']
         file = request.files['docx_file']
         if db_sess.query(News).filter(News.title == news_form.title.data):
@@ -94,7 +92,6 @@ def add_news():
             return render_template("add_news.html", form=news_form, error="Отсутствует .docx file")
         news = News(
             title=news_form.title.data,
-            revelance=news_form.importance.data
         )
         if file and img and allowed_file(file.filename) and allowed_file(img.filename):
             docx_filename = secure_filename(file.filename)

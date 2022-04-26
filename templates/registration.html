@@ -1,63 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="for-form">
+<div class="for-form">
     <h2>Register form</h2>
-    <form action="" method="post" novalidate>
+    <form method="post" novalidate enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <p>
             {{ form.name.label }}<br>
             {{ form.name(class="form-control") }}
             {% for error in form.name.errors %}
-              <div class="alert alert-danger" role="alert">
-                  {{ error }}
-              </div>
-            {% endfor %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
         </p>
         <p>
             {{ form.birthday.label }}<br>
             {{ form.birthday(class="form-control", type="date") }}
             {% for error in form.birthday.errors %}
-              <div class="alert alert-danger" role="alert">
-                  {{ error }}
-              </div>
-            {% endfor %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
         </p>
         <p>
             {{ form.email.label }}<br>
             {{ form.email(class="form-control", type="email") }}
             {% for error in form.email.errors %}
-              <div class="alert alert-danger" role="alert">
-                  {{ error }}
-              </div>
-            {% endfor %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
         </p>
         <p>
             {{ form.password.label }}<br>
             {{ form.password(class="form-control", type="password") }}
             {% for error in form.password.errors %}
-              <div class="alert alert-danger" role="alert">
-                  {{ error }}
-              </div>
-            {% endfor %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
         </p>
         <p>
             {{ form.repeat_password.label }}<br>
             {{ form.repeat_password(class="form-control", type="password") }}
             {% for error in form.repeat_password.errors %}
-              <div class="alert alert-danger" role="alert">
-                  {{ error }}
-              </div>
-            {% endfor %}
-        </p>
-        <p>
-        <div class="form-group">
-            <label for="photo">Приложите аватарку</label>
-            <input type="file" class="form-control-file" id="photo"
-                   name="profile_picture">
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
         </div>
+        {% endfor %}
         </p>
+        <div class="form-group">
+            <label for="photo">Выберите файл</label>
+            <input type="file" class="form-control-file" id="photo"
+                   name="file">
+        </div>
         <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     </form>
-  </div>
+</div>
 {% endblock %}
