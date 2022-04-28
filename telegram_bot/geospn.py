@@ -1,11 +1,10 @@
 import math
-
 import requests
+
 from dotenv import load_dotenv
-from os import environ  # для чтения переменных среды окружения
+from os import environ
 
 load_dotenv("env")  # берем свой файл
-#print(environ["API_KEY"])  # проверяем доступ к ключу
 static_maps_SERVICE = 'https://static-maps.yandex.ru/1.x/'
 search_api_server = f"https://search-maps.yandex.ru/v1/"
 geocoder_SERVICE = f"http://geocode-maps.yandex.ru/1.x/"

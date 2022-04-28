@@ -1,7 +1,12 @@
-from data3 import db_session
-#from data.themes import Theme
-from data3.jobs import Jobs
-from data3.departments import Department
+# тестирование БД mars_explorer
+#from data3 import db_session
+#from data3.jobs import Jobs
+#from data3.departments import Department
+
+# данные игрового форума
+from data import db_session
+from data.news import News
+from data.users import User
 
 import math
 import random
@@ -13,29 +18,31 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandl
 from telegram.error import BadRequest, TelegramError
 import sqlite3
 import logging
+
+# моя библиотека API Yandex
 from geospn import llspan, find_org, lonlat_distance
 
+# для чтения переменных среды окружения
 from dotenv import load_dotenv
-from os import environ  # для чтения переменных среды окружения
+from os import environ
 
 load_dotenv("env")  # берем свой файл
 # ТОКЕН бота в телеграмме @Game_wiki_bot
 TOKEN = environ["TOKEN"]
 
-# Подключение базы данных
+# Подключение моей базы данных игр
 conn = sqlite3.connect("db/game.db", check_same_thread=False)
 cursor = conn.cursor()
 
 # Создание массива категорий википедии из БД
 cursor.execute('SELECT name FROM Category')
 categories = [i[0] for i in cursor.fetchall()]
+# cursor.execute('SELECT name FROM Menu')
+# menu = [i[0] for i in cursor.fetchall()]
 
-#db_session.global_init("db/content.db")
-db_session.global_init("db/mars_explorer.db")
-
-
-#cursor.execute('SELECT name FROM Menu')
-#menu = [i[0] for i in cursor.fetchall()]
+# Подключение БД игрового форума
+# db_session.global_init("db/mars_explorer.db")
+db_session.global_init("db/content.db")
 
 # Настройка и инициализация логов для отлаживания и контроля программы
 # Выводит время и дату события с описанием
@@ -47,11 +54,12 @@ data_db = []
 message_id = 0
 
 # Этапы/состояния разговора
-#FIRST, SECOND = range(2)
+# FIRST, SECOND = range(2)
 
 # Данные обратного вызова
 ONE, TWO, THREE, FOUR, FIVE = range(5)
 
+# клавиатуры кубиков и таймеров
 begin_keyboard = [['/dice', '/timer']]
 dice_keyboard = [['/6', '/2x6', '/20', '/return']]
 timer_keyboard = [['/30s', '/1m', '/5m', '/return']]
@@ -63,6 +71,7 @@ timer_markup = ReplyKeyboardMarkup(timer_keyboard, one_time_keyboard=False)
 close_markup = ReplyKeyboardMarkup(close_keyboard, one_time_keyboard=False)
 
 
+# функция запуска бота
 def start(update, context):
     context.bot.send_photo(update.message.chat_id, photo=open('cover.jpg', 'rb'))
     logging.info("Sent to @%s a Cover Photo.", update.message.from_user.first_name)
@@ -72,10 +81,11 @@ def start(update, context):
                               "Если в процессе работы бота возникните ошибка, нажмите кнопку вернуться назад или попробуйте ввести команду /enter"        ))
 
 
+# функция входа в бот
 def enter(update, context):
     logger.info("User %s started the conversation.", update.message.from_user.first_name)
 
- #   keyboard = [[InlineKeyboardButton(menu[i], callback_data=i)] for i in range(len(menu))]
+  # keyboard = [[InlineKeyboardButton(menu[i], callback_data=i)] for i in range(len(menu))]
     keyboard = [[InlineKeyboardButton('Новости', callback_data=str(ONE))],
                 [InlineKeyboardButton('Форум', callback_data=str(TWO))],
                 [InlineKeyboardButton('Википедия игр', callback_data=str(THREE))],
@@ -86,14 +96,16 @@ def enter(update, context):
 
     update.message.reply_text('Выберите один из пунктов меню:', reply_markup=reply_markup)
     logging.info("Sent to @%s Message of '/start' state.", update.message.from_user.first_name)
+
     return 1
 
 
+# функция повторного вывода начального меню бота
 def enter_query(update, context):
     query = update.callback_query
     logger.info("User %s started the conversation.", query.from_user.first_name)
     query.answer()
- #   keyboard = [[InlineKeyboardButton(menu[i], callback_data=i)] for i in range(len(menu))]
+  # keyboard = [[InlineKeyboardButton(menu[i], callback_data=i)] for i in range(len(menu))]
     keyboard = [[InlineKeyboardButton('Новости', callback_data=str(ONE))],
                 [InlineKeyboardButton('Форум', callback_data=str(TWO))],
                 [InlineKeyboardButton('Википедия игр', callback_data=str(THREE))],
@@ -104,9 +116,11 @@ def enter_query(update, context):
 
     query.edit_message_text('Выберите один из пунктов меню:', reply_markup=reply_markup)
     logging.info("Sent to @%s Message of '/start' state.", query.from_user.first_name)
+
     return 1
 
 
+# функция вывода новостей игрового форума
 def news(update, context):
     global data_db, message_id
 
@@ -123,16 +137,16 @@ def news(update, context):
   #  data_db = cursor.fetchall()
 
     db_sess = db_session.create_session()
-  #  data_db = db_sess.query(Theme).all()
-    data_db = db_sess.query(Jobs).all()
+  # data_db = db_sess.query(Theme).all()
+  # data_db = db_sess.query(Jobs).all()
+    data_db = db_sess.query(News).all()
 
     text = 'Вот список новостей c игрового форума:'
- #   for pos in range(len(data_db)):
-  #      text = text + f'\n{pos + 1}) {data_db[pos][0].strip()}'
+  # for pos in range(len(data_db)):
+  #     text = text + f'\n{pos + 1}) {data_db[pos][0].strip()}'
 
     for pos in range(len(data_db)):
         text = text + f'\n{pos + 1}) {data_db[pos]}'
-
 
     message_id = query.message.message_id
 
@@ -145,7 +159,10 @@ def news(update, context):
     return 1
 
 
+# функция вывода сообщений с форума
 def forum(update, context):
+    global data_db, message_id
+
     query = update.callback_query
     variant = query.data
     # `CallbackQueries` требует ответа, даже если
@@ -159,16 +176,17 @@ def forum(update, context):
 
     keyboard = [[InlineKeyboardButton('Назад', callback_data='return')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
- #   text = 'Здесь будет информация о сообщениях на форуме'
+ #  text = 'Здесь будет информация о сообщениях на форуме'
 
- #   query.bot.edit_message_text(text, chat_id=query.message.chat_id,
-  #                              message_id=query.message.message_id,
- #                               reply_markup=reply_markup)
+ #  query.bot.edit_message_text(text, chat_id=query.message.chat_id,
+ #                             message_id=query.message.message_id,
+ #                             reply_markup=reply_markup)
     db_sess = db_session.create_session()
-    #  data_db = db_sess.query(Theme).all()
-    data_db = db_sess.query(Department).all()
+ #  data_db = db_sess.query(Theme).all()
+ #  data_db = db_sess.query(Department).all()
+    data_db = db_sess.query(User).all()
 
-    text = 'Вот список департаментов c игрового форума:'
+    text = 'Вот список пользователей c игрового форума:'
     #   for pos in range(len(data_db)):
     #      text = text + f'\n{pos + 1}) {data_db[pos][0].strip()}'
 
@@ -186,22 +204,24 @@ def forum(update, context):
     return 1
 
 
+# функция вывода меню википедии
 def wiki(update, context):
     query = update.callback_query
     # logger.info("Waiting user's answer...", update.message.from_user.first_name)
     query.answer()
-    #  logger.info("User %s started the conversation.", update.message.from_user.first_name)
+    # logger.info("User %s started the conversation.", update.message.from_user.first_name)
 
     keyboard = [[InlineKeyboardButton(categories[i], callback_data=i)] for i in range(len(categories))]
- #   keyboard2 = keyboard.append[InlineKeyboardButton('Назад', callback_data='return')]
+ #  keyboard2 = keyboard.append[InlineKeyboardButton('Назад', callback_data='return')]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     query.edit_message_text(text='Выберите категорию игр:', reply_markup=reply_markup)
-    #   logging.info("Sent to @%s Message of '/start' state.", update.message.from_user.first_name)
+    # logging.info("Sent to @%s Message of '/start' state.", update.message.from_user.first_name)
 
     return 2
 
 
+# функция запуска утилит
 def util(update, context):
     query = update.callback_query
     variant = query.data
@@ -210,25 +230,27 @@ def util(update, context):
 
     keyboard = [[InlineKeyboardButton('Назад', callback_data='return')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
- #   text = 'Здесь будут различные игровые утилиты. Такие как кубик и таймер'
-   # query.edit_message_text(text="Ok", reply_markup=ReplyKeyboardRemove())
-   # query.bot.edit_message_text(text, chat_id=query.message.chat_id,
-   #                             message_id=query.message.message_id,
-    #                            reply_markup=reply_markup)
+  # text = 'Здесь будут различные игровые утилиты. Такие как кубик и таймер'
+  # query.edit_message_text(text="Ok", reply_markup=ReplyKeyboardRemove())
+  # query.bot.edit_message_text(text, chat_id=query.message.chat_id,
+  #                            message_id=query.message.message_id,
+  #                            reply_markup=reply_markup)
     query.edit_message_text(text="Команда /dice кинуть кубики, /timer засечь время", reply_markup=reply_markup)
-    #update.message.reply_text("Команда /dice кинуть кубики, /timer засечь время", reply_markup=begin_markup)
+  # update.message.reply_text("Команда /dice кинуть кубики, /timer засечь время", reply_markup=begin_markup)
     return 4
 
 
+# функция запуска поиска магазина
 def url(update, context):
     query = update.callback_query
-    variant = query.data
+  # variant = query.data
     query.answer()
- #   query.edit_message_text(text=f"Выбранный вариант: {variant}")
+  # query.edit_message_text(text=f"Выбранный вариант: {variant}")
     query.edit_message_text(text="Введите адрес вашего месторасположения.")
     return 3
 
 
+# функция помощи по боту
 def help(update, context):
     """Send info about Telegram bot"""
     logging.info("Sent to @%s a '/help' Message.", update.message.from_user.first_name)
@@ -239,6 +261,7 @@ def help(update, context):
                               "При возникновении ошибок работы бота, так же нажмите команду /enter и вы вернётесь в главное меню.")
 
 
+# функция вывода списка категорий игр википедии
 def start_category(update, context):
     global data_db, message_id
 
@@ -268,6 +291,7 @@ def start_category(update, context):
     return 2
 
 
+# функция вывода информации по игре
 def game_number(update, context):
     global data_db, message_id
     game_num = update.message.text
@@ -296,10 +320,11 @@ def game_number(update, context):
         context.bot.send_message(update.message.chat_id, text=output + text)
         logging.info("Sent to @%s a Message FIRST state.", update.message.from_user.first_name)
 
-   #return 2
+   # return 2
     return ConversationHandler.END
 
 
+# функция остановки бота
 def stop(update, context):  # обработка выхода из диалога
     query = update.callback_query
     text = 'Остановка бота!'
@@ -308,6 +333,7 @@ def stop(update, context):  # обработка выхода из диалог�
     return ConversationHandler.END
 
 
+# обработчик ошибок бота
 def error(update, context):  # обработка ошибок
     logger.warning('Update "%s" caused error "%s"', update, context.error)
     query = update.callback_query
@@ -317,17 +343,17 @@ def error(update, context):  # обработка ошибок
         query.edit_message_text('Ошибка в запросе. Повторите запрос', reply_markup=markup)
     else:
         update.message.reply_text('Ошибка в запросе. Повторите запрос', reply_markup=markup)
- #   query.message.reply_text('Ошибка в запросе. Для возврата нажмите команду /enter или для остановки работы бота /stop', reply_markup=markup)
+  # query.message.reply_text('Ошибка в запросе. Для возврата нажмите команду /enter или для остановки работы бота /stop', reply_markup=markup)
 
 
+# функция обработки запроса поиска магазина
 def geocoder(update, context):
     try:
         ll, spn = llspan(update.message.text)
-      #  toponym_lon, toponym_lat, spn = llspan(update.message.text)
+       # toponym_lon, toponym_lat, spn = llspan(update.message.text)
        # ll = ",".join([toponym_lon, toponym_lat])
         toponym_lon, toponym_lat = ll.split(",")
         if ll and spn:
-            # Получаем координаты ближайшей аптеки.
             organization = find_org(ll)
             point = organization["geometry"]["coordinates"]
             organization_lat = float(point[0])
@@ -353,29 +379,34 @@ def geocoder(update, context):
 
     except (Exception, TelegramError):
             error(update, context)
-#    except Exception as err:
-#            print(err)
-#            error(update, context)
+  # except Exception as err:
+  #         print(err)
+  #         error(update, context)
+
             return 3
     return 3
 
 
+# обработчик кубика
 def dice(update, context):
     update.message.reply_text("Выберете какой кинуть кубик - 6 граней, 2 по 6, 20 или вернуться назад", reply_markup=dice_markup)
     return 4
 
 
+# обработчик таймера
 def timers(update, context):
     update.message.reply_text("Выберете время таймера - 30 сек., 1 мин., 5 мин. или вернуться назад", reply_markup=timer_markup)
     return 4
 
 
+# обработчик кубика
 def dice6(update, context):
     num = math.trunc(random.random() * 6) + 1
     update.message.reply_text("{0}".format(num), reply_markup=ReplyKeyboardRemove())
     return 1
 
 
+# обработчик кубика
 def dice2x6(update, context):
     num1 = math.trunc(random.random() * 6) + 1
     num2 = math.trunc(random.random() * 6) + 1
@@ -383,27 +414,32 @@ def dice2x6(update, context):
     return 1
 
 
+# обработчик кубика
 def dice20(update, context):
     num = math.trunc(random.random() * 20) + 1
     update.message.reply_text("{0}".format(num), reply_markup=ReplyKeyboardRemove())
     return 1
 
 
+# обработчик таймера
 def timer30(update, context):
     begin_timer(update, context, 30)
     return 4
 
 
+# обработчик таймера
 def timer60(update, context):
     begin_timer(update, context, 60)
     return 4
 
 
+# обработчик таймера
 def timer300(update, context):
     begin_timer(update, context, 300)
     return 4
 
 
+# обработчик таймера
 def begin_timer(update, context, delay):
     job = context.job_queue.run_once(close_timer, delay, context=update.message.chat_id)
     context.chat_data['job'] = job
@@ -411,12 +447,14 @@ def begin_timer(update, context, delay):
     return 4
 
 
+# обработчик таймера
 def close_timer(context):
     job = context.job
     context.bot.send_message(job.context, text='Время истекло', reply_markup=timer_markup)
     return 4
 
 
+# обработчик таймера
 def unset_timer(update, context):
     if 'job' in context.chat_data:
         context.chat_data['job'].schedule_removal()
@@ -424,18 +462,17 @@ def unset_timer(update, context):
     update.message.reply_text('Хорошо, вернулся сейчас!', reply_markup=timer_markup)
     return 4
 
-
+# основная функция программы
 def main():
     updater = Updater(TOKEN, use_context=True)
 
     dp = updater.dispatcher
-
     dp.add_handler(CommandHandler("help", help))
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('enter', enter),
                       CommandHandler('start', start)],
-        states={  # словарь состояний разговора, возвращаемых callback функциями
+        states={# словарь состояний разговора, возвращаемых callback функциями
             1: [CallbackQueryHandler(enter_query, pattern=r'return', pass_user_data=True),
                 CallbackQueryHandler(enter_query, pattern=r'error_return', pass_user_data=True),
                 CallbackQueryHandler(news, pattern='^' + str(ONE) + '$', pass_user_data=True),
@@ -450,7 +487,7 @@ def main():
                 CommandHandler('enter', enter_query),
                 CallbackQueryHandler(wiki, pattern=r'return', pass_user_data=True),
                 CallbackQueryHandler(enter_query, pattern=r'error_return', pass_user_data=True),
-          #      CallbackQueryHandler(enter_query, pattern=r'back', pass_user_data=True),
+             #  CallbackQueryHandler(enter_query, pattern=r'back', pass_user_data=True),
                 CallbackQueryHandler(start_category),
                 MessageHandler(Filters.text, game_number)
             ],
