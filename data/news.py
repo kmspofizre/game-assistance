@@ -11,5 +11,5 @@ class News(SqlAlchemyBase):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     image = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # json
     date_of_creation = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
-    weight = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
+    weight = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
     news_markup = sqlalchemy.Column(sqlalchemy.String, nullable=False)

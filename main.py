@@ -1,5 +1,5 @@
 import os
-# from news_text_handler import text_handler  не работает
+from news_text_handler import text_handler
 from flask import Flask, render_template, redirect, request
 from werkzeug.utils import secure_filename
 from data import db_session
@@ -7,7 +7,7 @@ from forms.user_registration import UserForm
 from data.users import User
 from data.news import News
 from forms.news_form import NewsForm
-from flask_login import LoginManager, login_required
+from flask_login import LoginManager, login_required, login_user
 import csv
 from mail_sender import send_email
 from dotenv import load_dotenv
@@ -74,10 +74,25 @@ def registration():
     return render_template('registration.html', form=form)
 
 
-#@app.route('/news')
-#def new(curr_new):  # через redirect
-    #to_render = text_handler(curr_new)
-    #return render_template('certain_news.html', text=to_render)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = None # LoginForm() - wtf_форма
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect("/")
+        return render_template('login.html',
+                               message="Неправильный логин или пароль",
+                               form=form)
+    return render_template('login.html', title='Авторизация', form=form)
+
+
+@app.route('/news')
+def new(curr_new):  # через redirect
+    to_render = text_handler(curr_new)
+    return render_template('certain_news.html', text=to_render)
 
 
 @app.route('/add_news', methods=["GET", "POST"])
