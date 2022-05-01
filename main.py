@@ -4,6 +4,7 @@ from flask import Flask, render_template, redirect, request
 from werkzeug.utils import secure_filename
 from data import db_session
 from forms.user_registration import UserForm
+from forms.login_form import LoginForm
 from data.users import User
 from data.news import News
 from forms.news_form import NewsForm
@@ -76,7 +77,7 @@ def registration():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = None # LoginForm() - wtf_форма
+    form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
