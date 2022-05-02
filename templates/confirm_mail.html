@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="confirm-mail-container">
+    Please, confirm your email address<br>
+    {% if mail_site != '' %}
+    {{ mail_site }}
+    {% endif %}
+</div>
