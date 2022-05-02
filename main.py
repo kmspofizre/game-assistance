@@ -115,7 +115,6 @@ def registration():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
             user.profile_picture = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         token = secrets.token_urlsafe(16)
-        print(token)
         user.set_email_code(token)
         user.set_password(form.password.data)
         db_sess.add(user)
