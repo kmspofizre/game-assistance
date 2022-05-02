@@ -1,12 +1,12 @@
 from docx import Document
 
+
 def text_handler(doc):
     document = Document(doc)
     data = document.paragraphs
     output = []
     headers = []
     for elem in data:
-        print(elem.text)
         header_t = ''
         for run in elem.runs:
             if run.bold:

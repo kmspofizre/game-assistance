@@ -7,17 +7,18 @@ from forms.user_registration import UserForm
 from data.users import User
 from data.news import News
 from forms.news_form import NewsForm
-from flask_login import LoginManager, login_required, login_user
+from flask_login import LoginManager, login_required, login_user, current_user
 import csv
 from mail_sender import send_email
 from dotenv import load_dotenv
+import datetime
 
 
 app = Flask(__name__)
 load_dotenv()
 
 ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg', 'docx'}  # для проверки расширения файла
-app.config['UPLOAD_FOLDER'] = "cgi-bin/static/img"
+app.config['UPLOAD_FOLDER'] = "static/img"
 app.config['UPLOAD_NEWS_FOLDER'] = "static/news"
 app.config['SECRET_KEY'] = 'nnwllknwthscd'
 db_session.global_init("db/content.db")
@@ -27,14 +28,58 @@ login_manager.init_app(app)
 
 
 with open('mails.csv', encoding='utf-8') as mails_file:
-    mails = csv.DictReader(mails_file, delimiter=',', quotechar='"')
-    required = list(filter(lambda x: x['почтовый домен'] == 'mail.ru', mails))
-    print(required[0]['адрес для входа в почту'])
+    MAILS = csv.DictReader(mails_file, delimiter=',', quotechar='"')
 
 
-def allowed_file(filename):  # для проверки расширения файла
+def separate_mail_domain(mail_address):
+    ind = mail_address.find('@')
+    mail_domain = mail_address[ind + 1:]
+    return mail_domain
+
+
+def find_mail_site(mail_address):
+    mail_domain = separate_mail_domain(mail_address)
+    required = list(filter(lambda x: x['почтовый домен'] == mail_domain, MAILS))
+    try:
+        return required[0]['адрес для входа в почту']
+    except IndexError:
+        return ''
+
+
+def send_confirmation_code():
+    hash_code = current_user.hashed_email_code
+    send_email(current_user.email, 'Confirm registration', hash_code, [])
+
+
+def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def change_filename(file):
+    file.filename = secure_filename(file.filename)
+    return file
+
+
+def secure_multiple(files):
+    return list(map(change_filename, files))
+
+
+def process_docx_file(docx_file):
+    docx_file.filename = secure_filename(docx_file.filename)
+    docx_file.save(os.path.join(f'docxs/{docx_file.filename}'))
+    markup = text_handler(f'docxs/{docx_file.filename}')
+    os.remove(os.path.join(f'docxs/{docx_file.filename}'))
+    return markup
+
+
+def process_images(images, news_header):
+    filenames = []
+    for im in images:
+        im.save(os.path.join(f'static/img/{im.filename}{news_header[:5]}'))
+        filenames.append(f'static/img/{im.filename}{news_header[:5]}')
+    filenames = ','.join(filenames)
+    return filenames
 
 
 @login_manager.user_loader
@@ -70,8 +115,16 @@ def registration():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
-        return redirect("/")
+        login_user(user, remember=True)
+        send_confirmation_code()
+        return redirect("/confirm_mail")
     return render_template('registration.html', form=form)
+
+
+@app.route('/confirm_mail')
+def confirm_mail(mail_address):
+    mail_site = find_mail_site(mail_address)
+    return render_template('confirm_mail.html', title='Mail confirmation', mail_site=mail_site)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -96,27 +149,27 @@ def new(curr_new):  # через redirect
 
 
 @app.route('/add_news', methods=["GET", "POST"])
+@login_required
 def add_news():
     news_form = NewsForm()
-    if request.method == "POST":
-        img = request.files['news_img']
-        file = request.files['docx_file']
-        if db_sess.query(News).filter(News.title == news_form.title.data):
-            return render_template("add_news.html", form=news_form, error="Новость с таким заголовком уже сущесвует")
-        if file.filename == '':
-            return render_template("add_news.html", form=news_form, error="Отсутствует .docx file")
+    if news_form.validate_on_submit():
+        img = news_form.pictures.raw_data
+        docx_file = news_form.text.data
+
+        img = secure_multiple(img)
+        news_markup = process_docx_file(docx_file)
+        images = process_images(img, news_form.title.data)
+
         news = News(
             title=news_form.title.data,
+            image=images,
+            date_of_creation=datetime.datetime.now(),
+            weight=1,
+            news_markup=news_markup
         )
-        if file and img and allowed_file(file.filename) and allowed_file(img.filename):
-            docx_filename = secure_filename(file.filename)
-            img_filename = secure_filename(img.filename)
-            file.save(os.path.join(app.config['UPLOAD_NEWS_FOLDER'], docx_filename))
-            img.save(os.path.join(app.config['UPLOAD_FOLDER'], img_filename))
-            news.image = os.path.join(app.config['UPLOAD_FOLDER'], img_filename)
-            news.news_markup = os.path.join(app.config['UPLOAD_NEWS_FOLDER'], docx_filename)
         db_sess.add(news)
         db_sess.commit()
+        redirect('/')
     return render_template('add_news.html', title='News', news_form=news_form)
 
 
@@ -130,7 +183,8 @@ def post_form():
 @app.route('/check_email/<hashed_code>')
 @login_required
 def check_email(hashed_code):
-    pass
+    hash_code = current_user.hashed_email_code
+    send_email(current_user.email, 'Confirm registration', hash_code, [])
 
 
 def main():

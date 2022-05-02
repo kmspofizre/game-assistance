@@ -33,8 +33,8 @@ def send_email(email, subjects, text, attachments):
     server = smtplib.SMTP_SSL(os.getenv('HOST'), os.getenv('PORT'))
     server.login(addr_from, password)  # авторизация на сервере
 
-    server.send_message(msg)  # отправка сообщения
-    server.quit()  # выход с серва
+    server.send_message(msg)
+    server.quit()
     return True
 
 
