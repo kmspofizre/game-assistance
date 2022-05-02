@@ -15,6 +15,7 @@ body{
     max-width: 992px;
     margin: auto;
     display: flex;
+    z-index: 999;
 }
 
 
@@ -91,4 +92,15 @@ body{
 
 .page-conf img{
     margin-top: 20px;
+}
+
+
+.news-image{
+    display: flex;
+    justify-content: center;
+}
+
+
+.news-contt img{
+    z-index: 10;
 }

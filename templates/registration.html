@@ -50,11 +50,10 @@
         </div>
         {% endfor %}
         </p>
-        <div class="form-group">
-            <label for="photo">Выберите файл</label>
-            <input type="file" class="form-control-file" id="photo"
-                   name="file">
-        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">{{ form.profile_pic.label }}</label>
+            {{ form.profile_pic(class="form-control", type="file", id="formFile") }}
+          </div>
         <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     </form>
 </div>

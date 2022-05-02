@@ -7,19 +7,20 @@ from forms.user_registration import UserForm
 from data.users import User
 from data.news import News
 from forms.news_form import NewsForm
+from forms.login_form import LoginForm
 from flask_login import LoginManager, login_required, login_user, current_user
 import csv
 from mail_sender import send_email
 from dotenv import load_dotenv
 import datetime
 import secrets
-from werkzeug.security import generate_password_hash
+from PIL import Image
 
 
 app = Flask(__name__)
 load_dotenv()
 
-ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg', 'docx'}  # для проверки расширения файла
+ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg', 'docx'}
 app.config['UPLOAD_FOLDER'] = "static/img"
 app.config['UPLOAD_NEWS_FOLDER'] = "static/news"
 app.config['SECRET_KEY'] = 'nnwllknwthscd'
@@ -75,13 +76,33 @@ def process_docx_file(docx_file):
     return markup
 
 
-def process_images(images, news_header):
+def process_news_images(images, s_object):
     filenames = []
+    dirname = s_object[:10] + str(datetime.date.today())
+    os.mkdir(f'static/img/news/{dirname}')
     for im in images:
-        im.save(os.path.join(f'static/img/news/{im.filename}{news_header[:5]}'))
-        filenames.append(f'static/img/news/{im.filename}{news_header[:5]}')
+        new_name = f'static/img/news/{dirname}/{s_object[:5]}{im.filename}'
+        im.save(os.path.join(new_name))
+        im1 = Image.open(new_name)
+        im1 = im1.resize((600, 300))
+        im1.save(f'static/img/news/{dirname}/{s_object[:5]}{im.filename}')
+        filenames.append(f'img/news/{dirname}/{s_object[:5]}{im.filename}')
     filenames = ','.join(filenames)
     return filenames
+
+
+def process_users_images(images, s_object):
+    filenames = []
+    for im in images:
+        im.save(os.path.join(f'static/img/users/{s_object[:5]}{im.filename}'))
+        filenames.append(f'img/users/{s_object[:5]}{im.filename}')
+    filenames = ','.join(filenames)
+    return filenames
+
+
+def make_urls_for_images(images):
+    urls = list(map(lambda x: f"src={url_for('static', filename=x)}", images))
+    return urls
 
 
 @login_manager.user_loader
@@ -104,16 +125,13 @@ def registration():
             return render_template("registration.html", form=form, error="Такой пользователь уже существует")
         if form.password.data != form.repeat_password.data:
             return render_template("registration.html", form=form, error="Пароли не совпадают")
-        file = request.files['file']
+        profile_pic = process_users_images(secure_multiple([form.profile_pic.data]), form.name.data)
         user = User(
             day_of_birth=form.birthday.data,
             name=form.name.data,
             email=form.email.data,
+            profile_picture=profile_pic
         )
-        if file and allowed_file(file.filename):
-            # filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-            user.profile_picture = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         token = secrets.token_urlsafe(16)
         print(token)
         user.set_email_code(token)
@@ -135,7 +153,7 @@ def confirm_mail():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = None # LoginForm() - wtf_форма
+    form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
@@ -148,10 +166,18 @@ def login():
     return render_template('login.html', title='Авторизация', form=form)
 
 
-@app.route('/news')
-def new(curr_new):  # через redirect
-    to_render = text_handler(curr_new)
-    return render_template('certain_news.html', text=to_render)
+@app.route('/news/<news_id>')
+def new(news_id):
+    news = db_sess.query(News).filter(News.id == news_id).first()
+    markup = news.news_markup
+    images = make_urls_for_images(news.image.split(','))
+    if len(images) != 1:
+        return render_template('certain_news.html', text=markup,
+                               images=images[:3], lenght=len(images[:3]), title=news.title)
+    else:
+        carousel_maker = images[0]
+        return render_template('certain_news.html', text=markup,
+                               carousel_maker=carousel_maker, lenght=len(images), title=news.title)
 
 
 @app.route('/add_news', methods=["GET", "POST"])
@@ -164,7 +190,7 @@ def add_news():
 
         img = secure_multiple(img)
         news_markup = process_docx_file(docx_file)
-        images = process_images(img, news_form.title.data)
+        images = process_news_images(img, news_form.title.data)
 
         news = News(
             title=news_form.title.data,
