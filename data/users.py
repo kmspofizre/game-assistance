@@ -14,12 +14,13 @@ class User(SqlAlchemyBase, UserMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    age = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
+    day_of_birth = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
     profile_picture = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # там было что-то про json
     email = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     hashed_email_code = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    special_access = sqlalchemy.Column(sqlalchemy)
+    confirmed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True, default=False)
+    special_access = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True, default=False)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

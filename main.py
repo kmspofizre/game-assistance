@@ -1,6 +1,6 @@
 import os
 from news_text_handler import text_handler
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, abort, url_for
 from werkzeug.utils import secure_filename
 from data import db_session
 from forms.user_registration import UserForm
@@ -12,6 +12,8 @@ import csv
 from mail_sender import send_email
 from dotenv import load_dotenv
 import datetime
+import secrets
+from werkzeug.security import generate_password_hash
 
 
 app = Flask(__name__)
@@ -28,7 +30,7 @@ login_manager.init_app(app)
 
 
 with open('mails.csv', encoding='utf-8') as mails_file:
-    MAILS = csv.DictReader(mails_file, delimiter=',', quotechar='"')
+    MAILS = list(csv.DictReader(mails_file, delimiter=',', quotechar='"'))
 
 
 def separate_mail_domain(mail_address):
@@ -46,8 +48,8 @@ def find_mail_site(mail_address):
         return ''
 
 
-def send_confirmation_code():
-    hash_code = current_user.hashed_email_code
+def send_confirmation_code(token):
+    hash_code = token
     send_email(current_user.email, 'Confirm registration', hash_code, [])
 
 
@@ -76,8 +78,8 @@ def process_docx_file(docx_file):
 def process_images(images, news_header):
     filenames = []
     for im in images:
-        im.save(os.path.join(f'static/img/{im.filename}{news_header[:5]}'))
-        filenames.append(f'static/img/{im.filename}{news_header[:5]}')
+        im.save(os.path.join(f'static/img/news/{im.filename}{news_header[:5]}'))
+        filenames.append(f'static/img/news/{im.filename}{news_header[:5]}')
     filenames = ','.join(filenames)
     return filenames
 
@@ -91,39 +93,43 @@ def load_user(user_id):
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('main_page.html', title='Game Helper')
+    return render_template('main_page.html', title='Game Assistance')
 
 
 @app.route('/registration', methods=["GET", "POST"])
 def registration():
     form = UserForm()
-    if request.method == "POST":
+    if form.validate_on_submit():
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template("registration.html", form=form, error="Такой пользователь уже существует")
         if form.password.data != form.repeat_password.data:
             return render_template("registration.html", form=form, error="Пароли не совпадают")
         file = request.files['file']
         user = User(
-            age=form.birthday.data,
+            day_of_birth=form.birthday.data,
             name=form.name.data,
-            email=form.email.data
+            email=form.email.data,
         )
         if file and allowed_file(file.filename):
             # filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
             user.profile_picture = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        token = secrets.token_urlsafe(16)
+        print(token)
+        user.set_email_code(token)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
         login_user(user, remember=True)
-        send_confirmation_code()
-        return redirect("/confirm_mail")
+        send_confirmation_code(token)
+        return redirect('/confirm_mail')
     return render_template('registration.html', form=form)
 
 
 @app.route('/confirm_mail')
-def confirm_mail(mail_address):
-    mail_site = find_mail_site(mail_address)
+def confirm_mail():
+    mail_site = find_mail_site(current_user.email)
     return render_template('confirm_mail.html', title='Mail confirmation', mail_site=mail_site)
 
 
@@ -173,18 +179,15 @@ def add_news():
     return render_template('add_news.html', title='News', news_form=news_form)
 
 
-def post_form():
-    email = ''
-    if send_email(email, 'Email verification', 'link', []):  # отправляем на нее письмо
-        return f'Письмо отправлено успешно на адрес {email}'
-    return f'Во время отправки письма на адрес {email} произошла ошибка'
-
-
-@app.route('/check_email/<hashed_code>')
+@app.route('/check_email/<user_token>')
 @login_required
-def check_email(hashed_code):
-    hash_code = current_user.hashed_email_code
-    send_email(current_user.email, 'Confirm registration', hash_code, [])
+def check_email(user_token):
+    code_check = current_user.check_email_code(user_token)
+    if code_check:
+        current_user.confirmed = True
+        return render_template('page_confirmed.html', title='Page confirmed',
+                               welcome=f"src={url_for('static', filename='img/welcome_to_the_family.gif')}")
+    abort(404)
 
 
 def main():

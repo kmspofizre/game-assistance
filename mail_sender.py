@@ -17,22 +17,24 @@ def send_email(email, subjects, text, attachments):
     msg['To'] = email
     msg['Subject'] = subjects
     msg_text = f"Hello!\nYou need to verify your mail\nHere is the link:\n{text}"
+    print(text)
     msg_html = f"""\
     <html>
       <head></head>
       <body>
         <div style="text-align:center; font-family: sans-serif;">
             <span style="font-size: 25px;">Hello!</span><br>
-            <span style="font-size: 18px">You need to verify your account - <a href="{text}">link</a></span>
+            <span style="font-size: 18px">You need to verify your account -
+             <a href="https://www.google.com/">link</a></span>
         </div>
       </body>
     </html>
     """
-    msg.attach(MIMEText(msg_html, 'html'))
+    msg_html = MIMEText(msg_html, 'html')
+    msg.attach(msg_html)
     process_attachments(msg, attachments)
     server = smtplib.SMTP_SSL(os.getenv('HOST'), os.getenv('PORT'))
     server.login(addr_from, password)  # авторизация на сервере
-
     server.send_message(msg)
     server.quit()
     return True

@@ -79,4 +79,16 @@ body{
 .confirm-mail-container{
     text-align: center;
     font-size: 16px;
+    margin-top: 50px;
+}
+
+
+.page-conf{
+    text-align: center;
+    font-size: 25px;
+}
+
+
+.page-conf img{
+    margin-top: 20px;
 }
