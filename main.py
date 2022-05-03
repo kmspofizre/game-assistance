@@ -33,7 +33,13 @@ login_manager.init_app(app)
 
 
 with open('mails.csv', encoding='utf-8') as mails_file:
-    MAILS = list(csv.DictReader(mails_file, delimiter=',', quotechar='"'))
+    MAILS = list(
+        csv.DictReader(
+            mails_file,
+            delimiter=',',
+            quotechar='"'
+        )
+    )
 
 
 def separate_mail_domain(mail_address):
@@ -44,7 +50,12 @@ def separate_mail_domain(mail_address):
 
 def find_mail_site(mail_address):
     mail_domain = separate_mail_domain(mail_address)
-    required = list(filter(lambda x: x['почтовый домен'] == mail_domain, MAILS))
+    required = list(
+        filter(
+            lambda x: x['почтовый домен'] == mail_domain,
+            MAILS
+        )
+    )
     try:
         return required[0]['адрес для входа в почту']
     except IndexError:
@@ -127,7 +138,12 @@ schedule.every().hour.do(update_rating)
 
 
 def make_urls_for_images(images):
-    urls = list(map(lambda x: f"src={url_for('static', filename=x)}", images))
+    urls = list(
+        map(
+            lambda x: f"src={url_for('static', filename=x)}",
+            images
+        )
+    )
     return urls
 
 
@@ -140,7 +156,10 @@ def load_user(user_id):
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('main_page.html', title='Game Assistance')
+    return render_template(
+        'main_page.html',
+        title='Game Assistance'
+    )
 
 
 @app.route('/registration', methods=["GET", "POST"])
@@ -148,10 +167,21 @@ def registration():
     form = UserForm()
     if form.validate_on_submit():
         if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template("registration.html", form=form, error="Такой пользователь уже существует")
+            return render_template(
+                "registration.html",
+                form=form,
+                error="Такой пользователь уже существует"
+            )
         if form.password.data != form.repeat_password.data:
-            return render_template("registration.html", form=form, error="Пароли не совпадают")
-        profile_pic = process_users_images(secure_multiple([form.profile_pic.data]), form.name.data)
+            return render_template(
+                "registration.html",
+                form=form,
+                error="Пароли не совпадают"
+            )
+        profile_pic = process_users_images(
+            secure_multiple([form.profile_pic.data]),
+            form.name.data
+        )
         user = User(
             day_of_birth=form.birthday.data,
             name=form.name.data,
@@ -168,13 +198,20 @@ def registration():
         login_user(user, remember=True)
         send_confirmation_code(token)
         return redirect('/confirm_mail')
-    return render_template('registration.html', form=form)
+    return render_template(
+        'registration.html',
+        form=form
+    )
 
 
 @app.route('/confirm_mail')
 def confirm_mail():
     mail_site = find_mail_site(current_user.email)
-    return render_template('confirm_mail.html', title='Mail confirmation', mail_site=mail_site)
+    return render_template(
+        'confirm_mail.html',
+        title='Mail confirmation',
+        mail_site=mail_site
+    )
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -189,7 +226,11 @@ def login():
         return render_template('login.html',
                                message="Неправильный логин или пароль",
                                form=form)
-    return render_template('login.html', title='Авторизация', form=form)
+    return render_template(
+        'login.html',
+        title='Авторизация',
+        form=form
+    )
 
 
 @app.route('/news/<news_id>')
@@ -198,12 +239,20 @@ def new(news_id):
     markup = news.news_markup
     images = make_urls_for_images(news.image.split(','))
     if len(images) != 1:
-        return render_template('certain_news.html', text=markup,
-                               images=images[:3], lenght=len(images[:3]), title=news.title)
+        return render_template('certain_news.html',
+                               text=markup,
+                               images=images[:3],
+                               lenght=len(images[:3]),
+                               title=news.title
+                               )
     else:
         carousel_maker = images[0]
-        return render_template('certain_news.html', text=markup,
-                               carousel_maker=carousel_maker, lenght=len(images), title=news.title)
+        return render_template('certain_news.html',
+                               text=markup,
+                               carousel_maker=carousel_maker,
+                               lenght=len(images),
+                               title=news.title
+                               )
 
 
 @app.route('/add_news', methods=["GET", "POST"])
@@ -238,18 +287,34 @@ def check_email(user_token):
     code_check = current_user.check_email_code(user_token)
     if code_check:
         current_user.confirmed = True
-        return render_template('page_confirmed.html', title='Page confirmed',
-                               welcome=f"src={url_for('static', filename='img/welcome_to_the_family.gif')}")
+        return render_template('page_confirmed.html',
+                               title='Page confirmed',
+                               welcome=f"src={url_for('static', filename='img/welcome_to_the_family.gif')}"
+                               )
     abort(404)
 
 
 @app.route('/all_news/<news_range>')
 def all_news(news_range):
-    showing_range_left_edge, showing_range_right_edge = map(int, news_range.split('-'))
-    showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
+    showing_range_left_edge, showing_range_right_edge = map(
+        int,
+        news_range.split('-')
+    )
+    showing_range = list(
+        range(showing_range_left_edge + 1,
+              showing_range_right_edge + 1
+              )
+    )
     print(showing_range)
-    news_to_show = list(db_sess.query(News).filter(News.id.in_(showing_range)).all())
-    images = list(map(lambda x: make_urls_for_images(x.image.split(','))[0], news_to_show))
+    news_to_show = list(
+        db_sess.query(News).filter(News.id.in_(showing_range)).all()
+    )
+    images = list(
+        map(
+            lambda x: make_urls_for_images(x.image.split(','))[0],
+            news_to_show
+        )
+    )
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
@@ -276,8 +341,13 @@ def all_news(news_range):
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     print(news_to_show)
     print(images)
-    return render_template('all_news.html', all_news=news_to_show,
-                           images=images, current_page=page, **right_switch_button_params, **left_switch_button_params)
+    return render_template('all_news.html',
+                           all_news=news_to_show,
+                           images=images,
+                           current_page=page,
+                           **right_switch_button_params,
+                           **left_switch_button_params
+                           )
 
 
 def main():
