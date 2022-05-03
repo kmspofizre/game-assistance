@@ -253,7 +253,7 @@ def all_news(news_range):
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     print(news_to_show)
     print(images)
-    return render_template('all_news.html', all_news=news_to_show,
+    return render_template('all_news.html', all_news=news_to_show, title='All news',
                            images=images, current_page=page, **right_switch_button_params, **left_switch_button_params)
 
 
@@ -274,6 +274,41 @@ def add_theme():
         print(theme_form.title.data, theme_form.description.data, theme_form.content.data,
               theme_form.genre.data, theme_form.image.data)
     return render_template('add_theme.html', title='Add_theme', theme_form=theme_form)
+
+
+@app.route('/all_themes/<themes_range>')
+def all_themes(themes_range):
+    showing_range_left_edge, showing_range_right_edge = map(int, themes_range.split('-'))
+    showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
+    print(showing_range)
+    themes_to_show = list(db_sess.query(News).filter(News.id.in_(showing_range)).all())
+    page = showing_range_right_edge // 10
+    left_switch_button_params = {}
+    right_switch_button_params = {}
+    print(showing_range_right_edge > themes_to_show[-1].id)
+    if page == 1 and showing_range_right_edge > themes_to_show[-1].id:
+        left_switch_button_params['left_dis'] = True
+        right_switch_button_params['right_dis'] = True
+    elif page == 1:
+        left_switch_button_params['left_dis'] = True
+        right_switch_button_params['right_dis'] = False
+        right_switch_button_params['right_href'] = f"href=http://127.0.0.1:5000/all_themes/" \
+                                                   f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
+    elif showing_range_right_edge > themes_to_show[-1].id:
+        left_switch_button_params['left_dis'] = False
+        right_switch_button_params['right_dis'] = True
+        left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/all_themes/" \
+                                                 f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
+    else:
+        left_switch_button_params['left_dis'] = False
+        right_switch_button_params['right_dis'] = False
+        right_switch_button_params['right_href'] = f"href=http://127.0.0.1:5000/all_themes/" \
+                                                   f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
+        left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/all_themes/" \
+                                                 f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
+    print(themes_to_show)
+    return render_template('all_themes.html', all_themes=themes_to_show, title='All themes',
+                           current_page=page, **right_switch_button_params, **left_switch_button_params)
 
 
 def main():

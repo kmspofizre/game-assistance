@@ -1,0 +1,66 @@
+{% extend "base.html" %}
+{% block content %}
+<div class="certain-theme">
+    <div class="row">
+        <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
+            <div class="trads">
+                <div class="dropdown">
+                    <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                      Жанры
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                      <li><a class="dropdown-item" href="#">Жанр #1</a></li>
+                      <li><a class="dropdown-item" href="#">Жанр #2</a></li>
+                      <li><a class="dropdown-item" href="#">Жанр #3</a></li>
+                    </ul>
+                </div>
+                <br>
+                <a>Тред #1</a>
+                <br>
+                <a>Тред #2</a>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
+            <div class="theme-container">
+                <div class="theme-intro">
+                    {% if theme_image_exists %}
+                    <h3>{{ theme.description }}</h3>
+                    <span>{{ theme.content }}</span><br>
+                    <img {{ theme_image }} >
+                    {% else %}
+                    <h3>{{ theme.description }}</h3>
+                    <span>{{ theme.content }}</span>
+                    {% endif %}
+                </div>
+                <form action="" method="post" enctype="multipart/form-data">
+                    {{ theme_reply.hidden_tag() }}
+                    <p>
+                        {{ theme_reply.text.label }}<br>
+                        {{ theme_reply.text(class="form-control") }}
+                        {% for error in theme_reply.text.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ theme_reply.image.label }}<br>
+                        {{ theme_reply.image(class="form-control", type="file") }}
+                        {% for error in theme_reply.image.errors %}
+                          <div class="alert alert-danger" role="alert">
+                              {{ error }}
+                          </div>
+                        {% endfor %}
+                      </p>
+                </form>
+                {% for comment in comments %}
+                <div class="comment-cont">
+                    <h4>{{ users[loop.index0] }}</h4>
+                    <span>{{ comment.content }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
