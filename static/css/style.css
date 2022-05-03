@@ -106,12 +106,12 @@ body{
 }
 
 
-.news-switcher{
+.switcher{
     text-align: center;
 }
 
 
-.news-switcher a{
+.switcher a{
     color: black;
     text-decoration: none;
 }

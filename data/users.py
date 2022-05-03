@@ -15,7 +15,7 @@ class User(SqlAlchemyBase, UserMixin):
                            primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     day_of_birth = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
-    profile_picture = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # там было что-то про json
+    profile_picture = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     hashed_email_code = sqlalchemy.Column(sqlalchemy.String, nullable=True)
