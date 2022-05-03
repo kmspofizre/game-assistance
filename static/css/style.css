@@ -16,6 +16,30 @@ body{
     margin: auto;
     display: flex;
     z-index: 999;
+    justify-content: space-between;
+    padding-top: 15px;
+    padding-right: 15px;
+}
+
+
+.logo{
+    margin-top: 5px;
+}
+
+
+.navigation{
+    margin-top: 10px;
+}
+
+
+.login-user{
+    margin-top: 10px;
+}
+
+
+.moder-drop{
+    margin-top: 5px;
+    padding-left: 70px;
 }
 
 
