@@ -9,7 +9,9 @@ class News(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, autoincrement=True, primary_key=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    image = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # json
-    date_of_creation = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
+    image = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    date_of_creation = sqlalchemy.Column(sqlalchemy.String, default=str(datetime.now))
     weight = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
     news_markup = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    creator = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), nullable=True)
+    creator_id = orm.relation('User')

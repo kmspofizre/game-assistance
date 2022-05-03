@@ -197,7 +197,8 @@ def add_news():
             image=images,
             date_of_creation=datetime.datetime.now(),
             weight=1,
-            news_markup=news_markup
+            news_markup=news_markup,
+            creator=current_user.id
         )
         db_sess.add(news)
         db_sess.commit()
@@ -214,6 +215,43 @@ def check_email(user_token):
         return render_template('page_confirmed.html', title='Page confirmed',
                                welcome=f"src={url_for('static', filename='img/welcome_to_the_family.gif')}")
     abort(404)
+
+
+@app.route('/all_news/<news_range>')
+def all_news(news_range):
+    showing_range_left_edge, showing_range_right_edge = map(int, news_range.split('-'))
+    showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
+    print(showing_range)
+    news_to_show = list(db_sess.query(News).filter(News.id.in_(showing_range)).all())
+    images = list(map(lambda x: make_urls_for_images(x.image.split(','))[0], news_to_show))
+    page = showing_range_right_edge // 10
+    left_switch_button_params = {}
+    right_switch_button_params = {}
+    print(showing_range_right_edge > news_to_show[-1].id)
+    if page == 1 and showing_range_right_edge > news_to_show[-1].id:
+        left_switch_button_params['left_dis'] = True
+        right_switch_button_params['right_dis'] = True
+    elif page == 1:
+        left_switch_button_params['left_dis'] = True
+        right_switch_button_params['right_dis'] = False
+        right_switch_button_params['right_href'] = f"href=http://127.0.0.1:5000/all_news/" \
+                                                   f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
+    elif showing_range_right_edge > news_to_show[-1].id:
+        left_switch_button_params['left_dis'] = False
+        right_switch_button_params['right_dis'] = True
+        left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/all_news/" \
+                                                 f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
+    else:
+        left_switch_button_params['left_dis'] = False
+        right_switch_button_params['right_dis'] = False
+        right_switch_button_params['right_href'] = f"href=http://127.0.0.1:5000/all_news/" \
+                                                   f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
+        left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/all_news/" \
+                                                 f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
+    print(news_to_show)
+    print(images)
+    return render_template('all_news.html', all_news=news_to_show,
+                           images=images, current_page=page, **right_switch_button_params, **left_switch_button_params)
 
 
 def main():
