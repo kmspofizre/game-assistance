@@ -14,6 +14,7 @@ from mail_sender import send_email
 from dotenv import load_dotenv
 import datetime
 import secrets
+import schedule
 from werkzeug.security import generate_password_hash
 
 
@@ -83,6 +84,30 @@ def process_images(images, news_header):
         filenames.append(f'static/img/news/{im.filename}{news_header[:5]}')
     filenames = ','.join(filenames)
     return filenames
+
+
+def create_list_of_news():
+    list_of_news = []
+    for news in db_sess.query(News).all():
+        id_rating = (news.id, news.rating)
+        list_of_news.append(id_rating)
+    return list_of_news
+
+
+def return_current_news(tuple_of_id_and_rating):
+    news = db_sess.query(News).filter(News.id == tuple_of_id_and_rating[0])
+    return news
+
+
+def update_rating():
+    for news in db_sess.query(News).all():
+        today = datetime.datetime.now()
+        delta = today - news.date_of_creation
+        delta = delta.total_seconds() / 3600
+        news.rating = delta * news.weight
+        db_sess.commit()
+
+schedule.every().hour.do(update_rating)
 
 
 @login_manager.user_loader
