@@ -14,5 +14,6 @@ class News(SqlAlchemyBase):
     weight = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
     rating = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
     news_markup = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
     creator = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), nullable=True)
     creator_id = orm.relation('User')

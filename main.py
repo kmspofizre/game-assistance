@@ -86,9 +86,9 @@ def secure_multiple(files):
 
 def process_docx_file(docx_file):
     docx_file.filename = secure_filename(docx_file.filename)
-    docx_file.save(os.path.join(f'docxs/{docx_file.filename}'))
-    markup = text_handler(f'docxs/{docx_file.filename}')
-    os.remove(os.path.join(f'docxs/{docx_file.filename}'))
+    docx_file.save(os.path.join(f'{app.config["UPLOAD_NEWS_FOLDER"]}/{docx_file.filename}'))
+    markup = text_handler(f'{app.config["UPLOAD_NEWS_FOLDER"]}/{docx_file.filename}')
+    os.remove(os.path.join(f'{app.config["UPLOAD_NEWS_FOLDER"]}/{docx_file.filename}'))
     return markup
 
 
@@ -116,7 +116,17 @@ def process_users_images(images, s_object):
     return filenames
 
 
-def create_list_of_news():
+def datetime_sort():
+    list_of_news = []
+    for news in db_sess.query(News).all():
+        today = datetime.datetime.now()
+        delta = today - news.date_of_creation
+        id_delta = (news.id, delta)
+    list_of_news.sort(key=lambda x: x[1], reverse=True)
+    return list_of_news
+
+
+def create_list_of_news_rating():
     list_of_news = []
     for news in db_sess.query(News).all():
         id_rating = (news.id, news.rating)
@@ -124,8 +134,8 @@ def create_list_of_news():
     return list_of_news
 
 
-def return_current_news(tuple_of_id_and_rating):
-    news = db_sess.query(News).filter(News.id == tuple_of_id_and_rating[0])
+def return_current_news_rating(tuple_of_id_and_rating):
+    news = db_sess.query(News).filter(News.id == tuple_of_id_and_rating[0]).first()
     return news
 
 
@@ -136,6 +146,7 @@ def update_rating():
         delta = delta.total_seconds() / 3600
         news.rating = delta * news.weight
         db_sess.commit()
+
 
 schedule.every().hour.do(update_rating)
 
@@ -309,9 +320,10 @@ def all_news(news_range):
               )
     )
     print(showing_range)
-    news_to_show = list(
-        db_sess.query(News).filter(News.id.in_(showing_range)).all()
-    )
+    list_of_news = create_list_of_news_rating()
+    news_to_show = []
+    for i in range(len(list_of_news)):
+        news_to_show.append(return_current_news_rating(list_of_news[i]))
     images = list(
         map(
             lambda x: make_urls_for_images(x.image.split(','))[0],
