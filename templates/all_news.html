@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="all-news-page-cont">
+    <div class="row">
+        <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
+            <div class="trads">
+                <div class="dropdown">
+                    <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                      Жанры
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                      <li><a class="dropdown-item" href="#">Жанр #1</a></li>
+                      <li><a class="dropdown-item" href="#">Жанр #2</a></li>
+                      <li><a class="dropdown-item" href="#">Жанр #3</a></li>
+                    </ul>
+                </div>
+                <br>
+                <a>Тред #1</a>
+                <br>
+                <a>Тред #2</a>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
+            <div class="all-news">
+                {% for news in all_news %}
+                <a href="http://127.0.0.1:5000/news/{{ news.id }}" style="text-decoration: none;">
+                    <div class="certain-news-on-all-news">
+                        <div class="news-image-on-page">
+                            <img {{images[loop.index0]}}>
+                        </div>
+                        <div class="news-header-on-page">
+                            <h4>{{ news.title }}</h4>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <div class="news-switcher">
+                {% if left_dis %}
+                <a disabled> &lt;&lt; </a>
+                {% else %}
+                <a {{ left_href }} > &lt;&lt; </a>
+                {% endif %}
+                &emsp;{{ current_page }}&emsp;
+                {% if right_dis %}
+                <a disabled> &gt;&gt; </a>
+                {% else %}
+                <a {{ right_href }} > &gt;&gt; </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
