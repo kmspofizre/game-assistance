@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="for-form">
+    <h2>Theme form</h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ theme_form.hidden_tag() }}
+        <p>
+            {{ theme_form.title.label }}<br>
+            {{ theme_form.title(class="form-control") }}
+            {% for error in theme_form.title.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ theme_form.description.label }}<br>
+            {{ theme_form.description(class="form-control") }}
+            {% for error in theme_form.description.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ theme_form.content.label }}<br>
+            {{ theme_form.content(class="form-control") }}
+            {% for error in theme_form.content.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ theme_form.image.label }}<br>
+            {{ theme_form.image(class="form-control", type="file") }}
+            {% for error in theme_form.image.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ theme_form.genre.label }}<br>
+            {{ theme_form.genre(class="form-control") }}
+            {% for error in theme_form.genre.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>{{ theme_form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock %}

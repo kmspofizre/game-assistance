@@ -3,11 +3,14 @@ from news_text_handler import text_handler
 from flask import Flask, render_template, redirect, request, abort, url_for
 from werkzeug.utils import secure_filename
 from data import db_session
-from forms.user_registration import UserForm
 from data.users import User
 from data.news import News
+from data.themes import Theme
+from data.genres import Genres
 from forms.news_form import NewsForm
 from forms.login_form import LoginForm
+from forms.user_registration import UserForm
+from forms.theme_form import ThemeForm
 from flask_login import LoginManager, login_required, login_user, current_user
 import csv
 from mail_sender import send_email
@@ -252,6 +255,25 @@ def all_news(news_range):
     print(images)
     return render_template('all_news.html', all_news=news_to_show,
                            images=images, current_page=page, **right_switch_button_params, **left_switch_button_params)
+
+
+@app.route('/add_theme', methods=['GET', 'POST'])
+def add_theme():
+    theme_form = ThemeForm()
+    if theme_form.validate_on_submit():
+        new_theme = Theme(
+            title=theme_form.title.data,
+            description=theme_form.description.data,
+            content=theme_form.content.data
+        )
+        chosen_genre = theme_form.genre.data
+        image = theme_form.image.data  # сделать сохранение в static/img/themes
+        chosen_genre_id = db_sess.query(Genres).filter(Genres.title == chosen_genre).first()
+        new_theme.genre = chosen_genre_id
+
+        print(theme_form.title.data, theme_form.description.data, theme_form.content.data,
+              theme_form.genre.data, theme_form.image.data)
+    return render_template('add_theme.html', title='Add_theme', theme_form=theme_form)
 
 
 def main():
