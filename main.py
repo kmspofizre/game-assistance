@@ -1,6 +1,6 @@
 import os
 from news_text_handler import text_handler
-from flask import Flask, render_template, redirect, abort, url_for
+from flask import Flask, render_template, redirect, abort, url_for, request
 from werkzeug.utils import secure_filename
 from data import db_session
 from data.users import User
@@ -13,7 +13,9 @@ from forms.login_form import LoginForm
 from forms.user_registration import UserForm
 from forms.theme_form import ThemeForm
 from forms.comment_form import CommentForm
-from flask_login import LoginManager, login_required, login_user, current_user
+from forms.genre_form import GenreForm
+from forms.make_moder_form import MakeModerForm
+from flask_login import LoginManager, login_required, login_user, current_user, logout_user
 import csv
 from mail_sender import send_email
 from dotenv import load_dotenv
@@ -148,6 +150,13 @@ def load_user(user_id):
     return db_sess.query(User).get(user_id)
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
+
+
 @app.route('/')
 @app.route('/index')
 def index():
@@ -179,7 +188,6 @@ def registration():
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         login_user(user, remember=True)
         if current_user == 1:
-            print('aaaaaaaaaaaaaaa')
             current_user.special_access = 1
         send_confirmation_code(token)
         return redirect('/confirm_mail')
@@ -264,13 +272,11 @@ def check_email(user_token):
 def all_news(news_range):
     showing_range_left_edge, showing_range_right_edge = map(int, news_range.split('-'))
     showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
-    print(showing_range)
     news_to_show = list(db_sess.query(News).filter(News.id.in_(showing_range)).all())
     images = list(map(lambda x: make_urls_for_images(x.image.split(','))[0], news_to_show))
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
-    print(showing_range_right_edge > news_to_show[-1].id)
     if page == 1 and showing_range_right_edge > news_to_show[-1].id:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = True
@@ -291,8 +297,6 @@ def all_news(news_range):
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
         left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/all_news/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
-    print(news_to_show)
-    print(images)
     return render_template('all_news.html', all_news=news_to_show, title='All news',
                            images=images, current_page=page, **right_switch_button_params, **left_switch_button_params)
 
@@ -323,13 +327,10 @@ def add_theme():
 def all_themes(themes_range):
     showing_range_left_edge, showing_range_right_edge = map(int, themes_range.split('-'))
     showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
-    print(showing_range)
     themes_to_show = list(db_sess.query(Theme).filter(Theme.id.in_(showing_range)).all())
-    print(themes_to_show[0])
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
-    print(showing_range_right_edge > themes_to_show[-1].id)
     if page == 1 and showing_range_right_edge > themes_to_show[-1].id:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = True
@@ -417,6 +418,115 @@ def theme(theme_id, comments_range):
                            current_page=page, title=chosen_theme.title, theme=chosen_theme,
                            theme_image=theme_image,
                            **right_switch_button_params, **left_switch_button_params)
+
+
+@app.route('/add_genre', methods=['GET', 'POST'])
+def add_genre():
+    genre_form = GenreForm()
+    if genre_form.validate_on_submit():
+        new_genre = Genres(
+            title=genre_form.title.data
+        )
+        db_sess.add(new_genre)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_genre.html', title='Add genre', genre_form=genre_form)
+
+
+@app.route('/make_moder', methods=['GET', 'POST'])
+def make_moder():
+    add_moder_form = MakeModerForm()
+    if add_moder_form.validate_on_submit():
+        user = db_sess.query(User).filter(User.email == add_moder_form.email.data).first()
+        if user:
+            user.special_access = True
+            db_sess.commit()
+            return redirect('/')
+        else:
+            return render_template('make_moder.html', title='Add moder',
+                                   error='User with such email doesnt exist', add_moder_form=add_moder_form)
+    return render_template('make_moder.html', title='Add moder', error='', add_moder_form=add_moder_form)
+
+
+@app.route('/delete_news/<int:news_id>')
+def delete_news(news_id):
+    chosen_news = db_sess.query(News).filter(News.id == news_id).first()
+    db_sess.delete(chosen_news)
+    db_sess.commit()
+    return redirect('/all_news/0-10')
+
+
+@app.route('/delete_theme/<int:theme_id>')
+def delete_theme(theme_id):
+    chosen_theme = db_sess.query(Theme).filter(Theme.id == theme_id).first()
+    db_sess.delete(chosen_theme)
+    db_sess.commit()
+    return redirect('/all_themes/0-10')
+
+
+@app.route('/delete_comment/<int:theme_id>/<int:comment_id>')
+def delete_comment(theme_id, comment_id):
+    chosen_comment = db_sess.query(Comment).filter(Comment.id == comment_id).first()
+    db_sess.delete(chosen_comment)
+    db_sess.commit()
+    return redirect(f'/themes/{theme_id}/0-10')
+
+
+@app.route('/edit_news/<int:news_id>', methods=['GET', 'POST'])
+def edit_news(news_id):
+    chosen_news = db_sess.query(News).filter(News.id == news_id).first()
+    news_form = NewsForm()
+    if request.method == 'GET':
+        if chosen_news:
+            news_form.title.data = chosen_news.title
+        else:
+            abort(404)
+    if news_form.validate_on_submit():
+        if chosen_news:
+            img = news_form.pictures.raw_data
+            docx_file = news_form.text.data
+
+            img = secure_multiple(img)
+            news_markup = process_docx_file(docx_file)
+            images = process_news_images(img, news_form.title.data)
+            chosen_news.title = news_form.title.data
+            chosen_news.image = images
+            chosen_news.news_markup = news_markup
+            db_sess.commit()
+            return redirect('/all_news/0-10')
+        else:
+            abort(404)
+    return render_template('add_news.html', title='Edit news', news_form=news_form)
+
+
+@app.route('/edit_theme/<int:theme_id>', methods=['GET', 'POST'])
+def edit_theme(theme_id):
+    chosen_theme = db_sess.query(Theme).filter(Theme.id == theme_id).first()
+    theme_form = ThemeForm()
+    if request.method == 'GET':
+        if chosen_theme:
+            theme_form.title.data = chosen_theme.title
+            theme_form.description.data = chosen_theme.description
+            theme_form.content.data = chosen_theme.content
+        else:
+            abort(404)
+    if theme_form.validate_on_submit():
+        if chosen_theme:
+            chosen_theme.title = theme_form.title.data
+            chosen_theme.description = theme_form.description.data
+            chosen_theme.content = theme_form.content.data
+            chosen_genre = theme_form.genre.data
+            if theme_form.image.data:
+                img = secure_multiple(theme_form.image.raw_data)
+                image = process_theme_images(img)
+                chosen_theme.image = image
+            chosen_genre_id = db_sess.query(Genres).filter(Genres.title == chosen_genre).first()
+            chosen_theme.genre = chosen_genre_id.id
+            db_sess.commit()
+        else:
+            abort(404)
+        return redirect('/all_news/0-10')
+    return render_template('add_news.html', title='Edit theme', news_form=theme_form)
 
 
 def main():

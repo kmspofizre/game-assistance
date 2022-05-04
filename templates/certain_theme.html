@@ -69,8 +69,13 @@
                     <br>
                     <img {{images[loop.index0]}} style="width: 50%; height: 50%; margin-top: 5px;">
                     {% endif %}
-                </div>
+                    {% if current_user.id == comment.user_id or current_user.special_access %}
+                    <div style="margin-top: 5px; margin-bottom: 5px;">
+                        <a href="http://127.0.0.1:5000/delete_comment/{{ theme.id }}/{{ comment.id }}" ><button type="button" class="btn btn-outline-danger">Delete</button></a>
+                    </div>
+                    {% endif %}
                 {% endfor %}
+                </div>
             </div>
             <div class="switcher">
                 {% if left_dis %}

@@ -28,6 +28,12 @@
                     <span>{{ theme.description }}</span>
                 </div>
             </a>
+            {% if current_user.id == theme.user_id or current_user.special_access %}
+                <div style="margin-top: 10px; margin-bottom: 10px;">
+                <a href="http://127.0.0.1:5000/delete_theme/{{ theme.id }}" ><button type="button" class="btn btn-outline-danger">Delete</button></a>
+                <a href="http://127.0.0.1:5000/edit_theme/{{ theme.id }}"><button type="button" class="btn btn-outline-warning">Redact</button></a>
+                </div>
+                {% endif %}
             {% endfor %}
         </div>
         <div class="switcher">

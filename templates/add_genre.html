@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Genre form</h2>
+    <form action="" method="post">
+        {{ genre_form.hidden_tag() }}
+        <p>
+            {{ genre_form.title.label }}<br>
+            {{ genre_form.title(class="form-control") }}
+            {% for error in genre_form.title.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>{{ genre_form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+{% endblock %}
