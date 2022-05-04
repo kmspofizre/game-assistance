@@ -1,5 +1,9 @@
-{% extend "base.html" %}
+{% extends "base.html" %}
 {% block content %}
+<script>("clearButton").onclick = function(e) {
+    document.getElementById("textInput").value = "";
+  }
+</script>
 <div class="certain-theme">
     <div class="row">
         <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
@@ -26,39 +30,60 @@
                     {% if theme_image_exists %}
                     <h3>{{ theme.description }}</h3>
                     <span>{{ theme.content }}</span><br>
-                    <img {{ theme_image }} >
+                    <img {{ theme_image }} style="width: 100%; height: 100%; margin-bottom: 10px; margin-top: 10px;">
                     {% else %}
                     <h3>{{ theme.description }}</h3>
                     <span>{{ theme.content }}</span>
                     {% endif %}
                 </div>
+                {% if current_user.confirmed %}
                 <form action="" method="post" enctype="multipart/form-data">
                     {{ theme_reply.hidden_tag() }}
-                    <p>
-                        {{ theme_reply.text.label }}<br>
-                        {{ theme_reply.text(class="form-control") }}
-                        {% for error in theme_reply.text.errors %}
+                    <p style="margin-bottom: 5px;">
+                        {{ theme_reply.comment_text.label }}<br>
+                        {{ theme_reply.comment_text(class="form-control", value='', id="textInput") }}
+                        {% for error in theme_reply.comment_text.errors %}
                             <div class="alert alert-danger" role="alert">
                                 {{ error }}
                             </div>
                         {% endfor %}
                     </p>
-                    <p>
-                        {{ theme_reply.image.label }}<br>
-                        {{ theme_reply.image(class="form-control", type="file") }}
-                        {% for error in theme_reply.image.errors %}
+                    <p style="margin-bottom: 5px;">
+                        {{ theme_reply.comment_image(class="form-control", type="file") }}
+                        {% for error in theme_reply.comment_image.errors %}
                           <div class="alert alert-danger" role="alert">
                               {{ error }}
                           </div>
                         {% endfor %}
                       </p>
+                      <p>{{ theme_reply.submit(type="submit", class="btn btn-primary", id="clearButton") }}</p>
                 </form>
+                {% else %}
+                <div style="text-align:center;">Чтобы учавствовать в обсуждении, подтвердите аккаунт</div>
+                {% endif %}
                 {% for comment in comments %}
                 <div class="comment-cont">
-                    <h4>{{ users[loop.index0] }}</h4>
-                    <span>{{ comment.content }}</span>
+                    <span style="font-size: 20px; margin-bottom: 5px;"><strong>{{ users[loop.index0] }}</strong></span>&emsp;<span style="margin-bottom: 5px;">{{comment.date_of_creation}}</span><br>
+                    <span style="margin-bottom: 5px;">{{ comment.content }}</span>
+                    {% if comment.image %}
+                    <br>
+                    <img {{images[loop.index0]}} style="width: 50%; height: 50%; margin-top: 5px;">
+                    {% endif %}
                 </div>
                 {% endfor %}
+            </div>
+            <div class="switcher">
+                {% if left_dis %}
+                <a disabled> &lt;&lt; </a>
+                {% else %}
+                <a {{ left_href }} > &lt;&lt; </a>
+                {% endif %}
+                &emsp;{{ current_page }}&emsp;
+                {% if right_dis %}
+                <a disabled> &gt;&gt; </a>
+                {% else %}
+                <a {{ right_href }} > &gt;&gt; </a>
+                {% endif %}
             </div>
         </div>
     </div>

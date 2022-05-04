@@ -1,16 +1,18 @@
 import os
 from news_text_handler import text_handler
-from flask import Flask, render_template, redirect, request, abort, url_for
+from flask import Flask, render_template, redirect, abort, url_for
 from werkzeug.utils import secure_filename
 from data import db_session
 from data.users import User
 from data.news import News
 from data.themes import Theme
 from data.genres import Genres
+from data.comments import Comment
 from forms.news_form import NewsForm
 from forms.login_form import LoginForm
 from forms.user_registration import UserForm
 from forms.theme_form import ThemeForm
+from forms.comment_form import CommentForm
 from flask_login import LoginManager, login_required, login_user, current_user
 import csv
 from mail_sender import send_email
@@ -71,6 +73,10 @@ def secure_multiple(files):
     return list(map(change_filename, files))
 
 
+def define_comment_owner(comments):
+    return list(map(lambda x: db_sess.query(User).filter(User.id == x.user_id).first().name, comments))
+
+
 def process_docx_file(docx_file):
     docx_file.filename = secure_filename(docx_file.filename)
     docx_file.save(os.path.join(f'docxs/{docx_file.filename}'))
@@ -84,27 +90,55 @@ def process_news_images(images, s_object):
     dirname = s_object[:10] + str(datetime.date.today())
     os.mkdir(f'static/img/news/{dirname}')
     for im in images:
-        new_name = f'static/img/news/{dirname}/{s_object[:5]}{im.filename}'
+        nm = secrets.token_urlsafe(16)
+        new_name = f'static/img/news/{dirname}/{nm}.jpg'
         im.save(os.path.join(new_name))
         im1 = Image.open(new_name)
         im1 = im1.resize((600, 300))
-        im1.save(f'static/img/news/{dirname}/{s_object[:5]}{im.filename}')
-        filenames.append(f'img/news/{dirname}/{s_object[:5]}{im.filename}')
+        im1.save(new_name)
+        filenames.append(f'img/news/{dirname}/{nm}.jpg')
     filenames = ','.join(filenames)
     return filenames
 
 
-def process_users_images(images, s_object):
+def process_users_images(images):
     filenames = []
     for im in images:
-        im.save(os.path.join(f'static/img/users/{s_object[:5]}{im.filename}'))
-        filenames.append(f'img/users/{s_object[:5]}{im.filename}')
+        nm = secrets.token_urlsafe(16)
+        im.save(os.path.join(f'static/img/users/{nm}.jpg'))
+        filenames.append(f'img/users/{nm}.jpg')
     filenames = ','.join(filenames)
     return filenames
+
+
+def process_theme_images(images):
+    filenames = []
+    for im in images:
+        nm = secrets.token_urlsafe(16)
+        im.save(os.path.join(f'static/img/themes/{nm}.jpg'))
+        filenames.append(f'img/themes/{nm}.jpg')
+    filenames = ','.join(filenames)
+    return filenames
+
+
+def process_comment_images(images):
+    filenames = []
+    for im in images:
+        nm = secrets.token_urlsafe(16)
+        im.save(os.path.join(f'static/img/comments/{nm}.jpg'))
+        filenames.append(f'img/comments/{nm}.jpg')
+    filenames = ','.join(filenames)
+    return filenames
+
+
+def make_url(im):
+    if im is not None:
+        return f"src={url_for('static', filename=im)}"
+    return False
 
 
 def make_urls_for_images(images):
-    urls = list(map(lambda x: f"src={url_for('static', filename=x)}", images))
+    urls = list(map(make_url, images))
     return urls
 
 
@@ -128,21 +162,25 @@ def registration():
             return render_template("registration.html", form=form, error="Такой пользователь уже существует")
         if form.password.data != form.repeat_password.data:
             return render_template("registration.html", form=form, error="Пароли не совпадают")
-        profile_pic = process_users_images(secure_multiple([form.profile_pic.data]), form.name.data)
         user = User(
             day_of_birth=form.birthday.data,
             name=form.name.data,
-            email=form.email.data,
-            profile_picture=profile_pic
+            email=form.email.data
         )
+        if form.profile_pic.data:
+            profile_pic = process_users_images(secure_multiple([form.profile_pic.data]))
+            user.profile_picture = profile_pic
         token = secrets.token_urlsafe(16)
-        print(token)
         user.set_email_code(token)
         user.set_password(form.password.data)
+
         db_sess.add(user)
         db_sess.commit()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         login_user(user, remember=True)
+        if current_user == 1:
+            print('aaaaaaaaaaaaaaa')
+            current_user.special_access = 1
         send_confirmation_code(token)
         return redirect('/confirm_mail')
     return render_template('registration.html', form=form)
@@ -214,7 +252,9 @@ def add_news():
 def check_email(user_token):
     code_check = current_user.check_email_code(user_token)
     if code_check:
-        current_user.confirmed = True
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user.confirmed = 1
+        db_sess.commit()
         return render_template('page_confirmed.html', title='Page confirmed',
                                welcome=f"src={url_for('static', filename='img/welcome_to_the_family.gif')}")
     abort(404)
@@ -264,15 +304,18 @@ def add_theme():
         new_theme = Theme(
             title=theme_form.title.data,
             description=theme_form.description.data,
-            content=theme_form.content.data
+            content=theme_form.content.data,
+            user_id=current_user.id
         )
         chosen_genre = theme_form.genre.data
-        image = theme_form.image.data  # сделать сохранение в static/img/themes
+        if theme_form.image.data:
+            img = secure_multiple(theme_form.image.raw_data)
+            image = process_theme_images(img)
+            new_theme.image = image
         chosen_genre_id = db_sess.query(Genres).filter(Genres.title == chosen_genre).first()
-        new_theme.genre = chosen_genre_id
-
-        print(theme_form.title.data, theme_form.description.data, theme_form.content.data,
-              theme_form.genre.data, theme_form.image.data)
+        new_theme.genre = chosen_genre_id.id
+        db_sess.add(new_theme)
+        db_sess.commit()
     return render_template('add_theme.html', title='Add_theme', theme_form=theme_form)
 
 
@@ -281,7 +324,8 @@ def all_themes(themes_range):
     showing_range_left_edge, showing_range_right_edge = map(int, themes_range.split('-'))
     showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
     print(showing_range)
-    themes_to_show = list(db_sess.query(News).filter(News.id.in_(showing_range)).all())
+    themes_to_show = list(db_sess.query(Theme).filter(Theme.id.in_(showing_range)).all())
+    print(themes_to_show[0])
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
@@ -307,8 +351,72 @@ def all_themes(themes_range):
         left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/all_themes/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     print(themes_to_show)
-    return render_template('all_themes.html', all_themes=themes_to_show, title='All themes',
+    return render_template('themes.html', themes=themes_to_show, title='All themes',
                            current_page=page, **right_switch_button_params, **left_switch_button_params)
+
+
+@app.route('/themes/<int:theme_id>/<comments_range>', methods=['GET', 'POST'])
+def theme(theme_id, comments_range):
+    theme_reply = CommentForm()
+    if theme_reply.validate_on_submit():
+        new_comment = Comment(
+            content=theme_reply.comment_text.data,
+            date_of_creation=datetime.datetime.now(),
+            main_theme_id=theme_id,
+            user_id=current_user.id
+        )
+        theme_image = theme_reply.comment_image.data
+        if theme_image.filename != '':
+            comment_im = process_comment_images(theme_reply.comment_image.raw_data)
+            new_comment.image = comment_im
+        db_sess.add(new_comment)
+        db_sess.commit()
+        return redirect(f'http://127.0.0.1:5000/themes/1/0-10')
+
+    showing_range_left_edge, showing_range_right_edge = map(int, comments_range.split('-'))
+    showing_range = list(range(showing_range_left_edge + 1, showing_range_right_edge + 1))
+    chosen_theme = db_sess.query(Theme).filter(Theme.id == theme_id).first()
+    comments_for_theme = list(db_sess.query(Comment).filter(Comment.main_theme_id == theme_id,
+                                                       Comment.id.in_(showing_range)).all())
+    theme_image_exists = False
+    if chosen_theme.image is not None:
+        theme_image_exists = True
+    images_to_process = list(map(lambda x: x.image, comments_for_theme))
+    images = make_urls_for_images(images_to_process)
+    theme_image = make_urls_for_images([chosen_theme.image])[0]
+    users = define_comment_owner(comments_for_theme)
+    page = showing_range_right_edge // 10
+    left_switch_button_params = {}
+    right_switch_button_params = {}
+    try:
+        if page == 1 and showing_range_right_edge > comments_for_theme[-1].id:
+            left_switch_button_params['left_dis'] = True
+            right_switch_button_params['right_dis'] = True
+        elif page == 1:
+            left_switch_button_params['left_dis'] = True
+            right_switch_button_params['right_dis'] = False
+            right_switch_button_params['right_href'] = f"href=http://127.0.0.1:5000/themes/{theme_id}/" \
+                                                       f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
+        elif showing_range_right_edge > comments_for_theme[-1].id:
+            left_switch_button_params['left_dis'] = False
+            right_switch_button_params['right_dis'] = True
+            left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/themes/{theme_id}/" \
+                                                     f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
+        else:
+            left_switch_button_params['left_dis'] = False
+            right_switch_button_params['right_dis'] = False
+            right_switch_button_params['right_href'] = f"href=http://127.0.0.1:5000/themes/{theme_id}/" \
+                                                       f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
+            left_switch_button_params['left_href'] = f"href=http://127.0.0.1:5000/themes/{theme_id}/" \
+                                                     f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
+    except IndexError:
+        left_switch_button_params['left_dis'] = True
+        right_switch_button_params['right_dis'] = True
+    return render_template('certain_theme.html', theme_image_exists=theme_image_exists, images=images,
+                           users=users, theme_reply=theme_reply, comments=comments_for_theme,
+                           current_page=page, title=chosen_theme.title, theme=chosen_theme,
+                           theme_image=theme_image,
+                           **right_switch_button_params, **left_switch_button_params)
 
 
 def main():

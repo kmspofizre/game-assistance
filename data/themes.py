@@ -17,5 +17,6 @@ class Theme(SqlAlchemyBase):
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
+    number_of_messages = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, default=1)
     genre_id = orm.relation('Genres')
     user = orm.relation('User')

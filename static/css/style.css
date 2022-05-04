@@ -165,3 +165,12 @@ body{
     width: 100%;
     height: 100%;
 }
+
+
+.comment-cont{
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #d4d4d4;
+    padding: 5px;
+    border-radius: 5px;
+}
