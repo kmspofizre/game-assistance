@@ -15,7 +15,7 @@
     <div class="hehe">
         <header class="main-page-header">
             <div class="logo">
-
+                <a href="http://127.0.0.1:5000" style="color: aliceblue; text-decoration: none; font-size: 20px;">Game Assistance</a>
             </div>
             <div class="navigation">
                 <button
@@ -28,17 +28,46 @@
                         onclick="window.location.href = 'http://127.0.0.1:5000/registration';">Регистрация</button>
                 <button
                         onclick="window.location.href = 'http://127.0.0.1:5000/login';">Вход</button>
+                <a href="http://127.0.0.1:5000/all_news/0-10" style="color: aliceblue; text-decoration: none;">News</a>&emsp;<a href="http://127.0.0.1:5000/all_themes/0-10" style="color: aliceblue; text-decoration: none;">Trads</a>
             </div>
+            {% if current_user.special_access or current_user.id == 1 %}
+            <div class="moder-drop">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                      Moders
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton2">
+                      <li><a class="dropdown-item active" href="http://127.0.0.1:5000/add_news">Add news</a></li>
+                      <li><a class="dropdown-item" href="http://127.0.0.1:5000/add_theme">Add theme</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item" href="http://127.0.0.1:5000/make_moder">Add mod</a></li>
+                      <li><a class="dropdown-item" href="http://127.0.0.1:5000/add_genre">Add genre</a></li>
+                    </ul>
+                  </div>
+            </div>
+            {% endif %}
             <div class="login-user">
-
+                {% if current_user.is_authenticated %}
+                <a class="navbar-brand" href="http://127.0.0.1:5000/logout" style="color: aliceblue; text-decoration: none;">{{ current_user.name }}</a>
+                {% else %}
+                <a href="http://127.0.0.1:5000/login" style="color: aliceblue; text-decoration: none;">Log In</a>&emsp;<a href="http://127.0.0.1:5000/registration" style="color: aliceblue; text-decoration: none;">Register</a>
+                {% endif %}
             </div>
     </header>
     </div>
     <div class="main-container">
         {% block content %}{% endblock %}
     </div>
-    <footer>
-        <div class="contacts"></div>
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="contacts">
+                        <img src="{{ url_for('static', filename='img/telegram.jpg') }}" style="width: 50px; height: 50px; margin-right: 10px">Telegram
+                    </div>
+                </div>
+            </div>
+        </div>
     </footer>
 </body>
 </html>
