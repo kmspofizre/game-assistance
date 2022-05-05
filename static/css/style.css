@@ -174,3 +174,25 @@ body{
     padding: 5px;
     border-radius: 5px;
 }
+
+
+.single-description{
+    margin-bottom: 20px;
+}
+
+
+.single-description-ins{
+    display: flex;
+    justify-content: stretch;
+}
+
+
+.glossary{
+    padding-top: 10px;
+}
+
+
+.other-links a{
+    color: black;
+    text-decoration: none;
+}

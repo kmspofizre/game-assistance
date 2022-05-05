@@ -9,3 +9,4 @@ class Genres(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, autoincrement=True, primary_key=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    description = sqlalchemy.Column(sqlalchemy.String, nullable=False)

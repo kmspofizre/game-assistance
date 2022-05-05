@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 import datetime
 import secrets
 from PIL import Image
+import wikipediaapi
 
 
 app = Flask(__name__)
@@ -35,6 +36,7 @@ db_session.global_init("db/content.db")
 db_sess = db_session.create_session()
 login_manager = LoginManager()
 login_manager.init_app(app)
+wiki_wiki = wikipediaapi.Wikipedia('ru')
 
 
 with open('mails.csv', encoding='utf-8') as mails_file:
@@ -277,6 +279,10 @@ def all_news(news_range):
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
+    try:
+        assert showing_range_right_edge > news_to_show[-1].id
+    except IndexError:
+        return redirect('http://127.0.0.1:5000/nothing_yet/news')
     if page == 1 and showing_range_right_edge > news_to_show[-1].id:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = True
@@ -331,6 +337,10 @@ def all_themes(themes_range):
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
+    try:
+        assert showing_range_right_edge > themes_to_show[-1].id
+    except IndexError:
+        return redirect('http://127.0.0.1:5000/nothing_yet/themes')
     if page == 1 and showing_range_right_edge > themes_to_show[-1].id:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = True
@@ -424,12 +434,22 @@ def theme(theme_id, comments_range):
 def add_genre():
     genre_form = GenreForm()
     if genre_form.validate_on_submit():
-        new_genre = Genres(
-            title=genre_form.title.data
-        )
-        db_sess.add(new_genre)
-        db_sess.commit()
-        return redirect('/')
+        wiki_page = wiki_wiki.page(genre_form.title.data)
+        if wiki_page.exists():
+            if not db_sess.query(Genres).filter(Genres.title == genre_form.title.data).first():
+                new_genre = Genres(
+                    title=genre_form.title.data,
+                    description=wiki_page.summary
+                )
+                db_sess.add(new_genre)
+                db_sess.commit()
+                return redirect('/')
+            else:
+                return render_template('add_genre.html', title='Add genre',
+                                       genre_form=genre_form, genre_error='This genre already exists')
+        else:
+            return render_template('add_genre.html', title='Add genre',
+                                   genre_form=genre_form, genre_error='There is no Wiki page for this genre')
     return render_template('add_genre.html', title='Add genre', genre_form=genre_form)
 
 
@@ -444,7 +464,7 @@ def make_moder():
             return redirect('/')
         else:
             return render_template('make_moder.html', title='Add moder',
-                                   error='User with such email doesnt exist', add_moder_form=add_moder_form)
+                                   mod_error='User with such email doesnt exist', add_moder_form=add_moder_form)
     return render_template('make_moder.html', title='Add moder', error='', add_moder_form=add_moder_form)
 
 
@@ -527,6 +547,17 @@ def edit_theme(theme_id):
             abort(404)
         return redirect('/all_news/0-10')
     return render_template('add_news.html', title='Edit theme', news_form=theme_form)
+
+
+@app.route('/glossary')
+def glossary():
+    genres = db_sess.query(Genres).all()
+    return render_template('glossary.html', genres=genres)
+
+
+@app.route('/nothing_yet/<type_n>')
+def nothing_yet(type_n):
+    return render_template('nothing_yet.html', title='Nothing yet', type_n=type_n)
 
 
 def main():
