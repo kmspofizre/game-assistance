@@ -7,6 +7,8 @@
 from data import db_session
 from data.news import News
 from data.users import User
+from data.themes import Theme
+from data.comments import Comment
 
 import math
 import random
@@ -187,8 +189,8 @@ def forum(update, context):
     data_db = db_sess.query(User).all()
 
     text = 'Вот список пользователей c игрового форума:'
-    #   for pos in range(len(data_db)):
-    #      text = text + f'\n{pos + 1}) {data_db[pos][0].strip()}'
+ #   for pos in range(len(data_db)):
+ #      text = text + f'\n{pos + 1}) {data_db[pos][0].strip()}'
 
     for pos in range(len(data_db)):
         text = text + f'\n{pos + 1}) {data_db[pos]}'
@@ -201,7 +203,7 @@ def forum(update, context):
     # query.edit_message_text(text=text, reply_markup=reply_markup)
     logging.info("Edited @%s Message FIRST state.", query.from_user.first_name)
 
-    return 1
+    return 5
 
 
 # функция вывода меню википедии
@@ -259,6 +261,38 @@ def help(update, context):
                               "Он поможет найти тебе любую нужную информацию.\n"
                               "Для входа в бот введите команду /enter\n"
                               "При возникновении ошибок работы бота, так же нажмите команду /enter и вы вернётесь в главное меню.")
+
+
+# функция вывода тем выбранного пользователя
+def user_number(update, context):
+    global data_db, message_id
+
+    context.user_data['user'] = update.message.text
+
+    keyboard = [[InlineKeyboardButton('Выбрать другого пользователя', callback_data='return')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    db_sess = db_session.create_session()
+ #   data_db = db_sess.query(Theme).all()
+    data_db = db_sess.query(Theme).filter(Theme.user_id == context.user_data['user']).all()
+
+    text = 'Вот список тем пользователя:'
+    for pos in range(len(data_db)):
+        text = text + f'\n{pos + 1}) {data_db[pos]}'
+
+    update.message.reply_text(text)
+
+    data_db = db_sess.query(Comment).filter(Comment.user_id == context.user_data['user']).all()
+
+    text = 'Вот список комментариев пользователя:'
+    for pos in range(len(data_db)):
+        text = text + f'\n{pos + 1}) {data_db[pos]}'
+
+    update.message.reply_text(text)
+
+    update.message.reply_text('Введите номер пользователя:')
+
+    return 5
 
 
 # функция вывода списка категорий игр википедии
@@ -510,6 +544,14 @@ def main():
                 CommandHandler("1m", timer60, pass_job_queue=True, pass_chat_data=True),
                 CommandHandler("5m", timer300, pass_job_queue=True, pass_chat_data=True),
                 CommandHandler("close", unset_timer, pass_chat_data=True),
+                ],
+            5: [CommandHandler('stop', stop),
+                CommandHandler('enter', enter_query),
+                CallbackQueryHandler(enter_query, pattern=r'return', pass_user_data=True),
+                CallbackQueryHandler(enter_query, pattern=r'error_return', pass_user_data=True),
+                #  CallbackQueryHandler(enter_query, pattern=r'back', pass_user_data=True),
+                #CallbackQueryHandler(start_category),
+                MessageHandler(Filters.text, user_number, pass_user_data=True)
                 ],
         },
         fallbacks=[CommandHandler('stop', stop)],
