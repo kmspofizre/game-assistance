@@ -1,43 +1,69 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="main">
-        <div class="row">
-            <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
-                <div class="trads">
-                    <div class="dropdown">
-                        <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                          Жанры
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                          <li><a class="dropdown-item" href="#">Жанр #1</a></li>
-                          <li><a class="dropdown-item" href="#">Жанр #2</a></li>
-                          <li><a class="dropdown-item" href="#">Жанр #3</a></li>
-                        </ul>
-                    </div>
-                    <div class="other-links">
-                        <br>
-                        <a>Тред #1</a>
-                        <br>
-                        <a>Тред #2</a>
-                        <br>
-                        <a href="http://127.0.0.1:5000/glossary">Glossary</a>
-                        <br>
-                        <a class="show-on-sm" href="http://127.0.0.1:5000/all_news/0-10">News</a>
-                        <br>
-                        <a class="show-on-sm" href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
-                    </div>
+<div class="main">
+    <div class="row">
+        <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
+            <div class="trads">
+                <div class="dropdown">
+                    <a class="btn btn-info dropdown-toggle" href="#"
+                       role="button" id="dropdownMenuLink"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Жанры
+                    </a>
+                    <ul class="dropdown-menu"
+                        aria-labelledby="dropdownMenuLink">
+                        {% for genre in genres %}
+                        <li><a class="dropdown-item"
+                               href="http://127.0.0.1:5000/themes_by_genre/{{genre.id}}/0-10">{{
+                            genre.title }}</a></li>
+                        {% endfor %}
+                    </ul>
                 </div>
-            </div>
-            <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
-                <div class="news">
-                    <div class="certain-new">
-                        Новость #1
-                    </div>
-                    <div class="certain-new">
-                        Новость #2
-                    </div>
+                <div class="other-links">
+                    {% for trad in trads %}
+                    <a href="http://127.0.0.1:5000/themes/{{trad.id}}/0-10">
+                        {{trad.title}}</a>
+                    <br>
+                    {% endfor %}
+                    <a href="http://127.0.0.1:5000/glossary">Glossary</a>
+                    <br>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_news/0-10">News</a>
+                    <br>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
                 </div>
             </div>
         </div>
+        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
+            <div class="news">
+                <h2 style="margin-top: 10px; margin-bottom: 20px;">Новости</h2>
+                {% for news in important_news %}
+                <a href="http://127.0.0.1:5000/news/{{ news.id }}"
+                   style="text-decoration: none;">
+                    <div class="certain-news-on-all-news">
+                        <div class="news-image-on-page">
+                            <img {{images[loop.index0]}}>
+                        </div>
+                        <div class="news-header-on-page">
+                            <h4 style="text-align: center;">{{ news.title }}</h4>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <h2 style="text-align: center; margin-top: 60px; margin-bottom: 15px;">
+            Трэды</h2>
+        {% for theme in themes %}
+        <a href="http://127.0.0.1:5000/themes/{{ theme.id }}/0-10"
+           style="text-decoration: none; color: black;">
+            <div class="theme-block">
+                <h3>{{ theme.title }}</h3><br>
+                <span>{{ theme.description }}</span>
+            </div>
+        </a>
+        {% endfor %}
     </div>
+</div>
 {% endblock %}

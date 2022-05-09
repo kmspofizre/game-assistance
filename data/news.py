@@ -12,8 +12,10 @@ class News(SqlAlchemyBase):
     image = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     date_of_creation = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
     weight = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
-    rating = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
+    rating = sqlalchemy.Column(
+        sqlalchemy.Float,
+        nullable=True
+    )
     news_markup = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-
     creator = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), nullable=True)
     creator_id = orm.relation('User')

@@ -5,26 +5,33 @@
         <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
             <div class="trads">
                 <div class="dropdown">
-                    <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                      Жанры
+                    <a class="btn btn-info dropdown-toggle" href="#"
+                       role="button" id="dropdownMenuLink"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Жанры
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                      <li><a class="dropdown-item" href="#">Жанр #1</a></li>
-                      <li><a class="dropdown-item" href="#">Жанр #2</a></li>
-                      <li><a class="dropdown-item" href="#">Жанр #3</a></li>
+                    <ul class="dropdown-menu"
+                        aria-labelledby="dropdownMenuLink">
+                        {% for genre in genres %}
+                        <li><a class="dropdown-item"
+                               href="http://127.0.0.1:5000/themes_by_genre/{{genre.id}}/0-10">{{
+                            genre.title }}</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
                 <div class="other-links">
+                    {% for trad in trads %}
+                    <a href="http://127.0.0.1:5000/themes/{{trad.id}}/0-10">
+                        {{trad.title}}</a>
                     <br>
-                    <a>Тред #1</a>
-                    <br>
-                    <a>Тред #2</a>
-                    <br>
+                    {% endfor %}
                     <a href="http://127.0.0.1:5000/glossary">Glossary</a>
                     <br>
-                    <a class="show-on-sm" href="http://127.0.0.1:5000/all_news/0-10">News</a>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_news/0-10">News</a>
                     <br>
-                    <a class="show-on-sm" href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
                 </div>
             </div>
         </div>

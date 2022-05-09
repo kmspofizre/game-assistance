@@ -155,11 +155,16 @@ body{
 .certain-news-on-all-news{
     display: flex;
     text-decoration: none;
+    border: 1px solid #d4d4d4;
+    padding: 5px;
+    border-radius: 5px;
 }
 
 
 .news-image-on-page{
     flex-basis: 33%;
+    width: 33%;
+    height: 33%;
 }
 
 
@@ -251,4 +256,13 @@ body{
     .show-on-sm{
         display: none;
     }
+}
+
+
+.theme-block{
+    text-align: center;
+    margin-top: 20px;
+    border: 1px solid #d4d4d4;
+    padding: 5px;
+    border-radius: 5px;
 }
