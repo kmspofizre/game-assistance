@@ -68,23 +68,15 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def change_filename(file):
-    file.filename = secure_filename(file.filename)
-    return file
-
-
-def secure_multiple(files):
-    return list(map(change_filename, files))
-
-
 def define_comment_owner(comments):
     return list(map(lambda x: db_sess.query(User).filter(User.id == x.user_id).first().name, comments))
 
 
 def process_docx_file(docx_file):
-    if docx_file.filename.rsplit('.', 1)[1].lower() != 'docx':
+    docx1 = docx_file.filename
+    docx1 = docx1.rsplit('.', 1)
+    if docx1[1].lower() != 'docx':
         return 'docx_error'
-    docx_file.filename = secure_filename(docx_file.filename)
     docx_file.save(os.path.join(f'docxs/{docx_file.filename}'))
     markup = text_handler(f'docxs/{docx_file.filename}')
     os.remove(os.path.join(f'docxs/{docx_file.filename}'))
@@ -100,11 +92,12 @@ def process_news_images(images, s_object, redact=False):
         except FileExistsError:
             return 'error'
     for im in images:
+        im2 = im.filename
         nm = secrets.token_urlsafe(16)
-        if im.title.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
+        if im2.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
             new_name = f'static/img/news/{dirname}/{nm}.jpg'
             filenames.append(f'img/news/{dirname}/{nm}.jpg')
-        elif im.title.rsplit('.', 1)[1].lower() == 'png':
+        elif im2.rsplit('.', 1)[1].lower() == 'png':
             new_name = f'static/img/news/{dirname}/{nm}.png'
             filenames.append(f'img/news/{dirname}/{nm}.png')
         else:
@@ -121,11 +114,12 @@ def process_news_images(images, s_object, redact=False):
 def process_users_images(images):
     filenames = []
     for im in images:
+        im2 = im.filename
         nm = secrets.token_urlsafe(16)
-        if im.title.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
-            im.save(os.path.join(f'static/img/users/{nm}.jpg'))
+        if im2.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
+            im2.save(os.path.join(f'static/img/users/{nm}.jpg'))
             filenames.append(f'img/users/{nm}.jpg')
-        elif im.title.rsplit('.', 1)[1].lower() == 'png':
+        elif im2.rsplit('.', 1)[1].lower() == 'png':
             im.save(os.path.join(f'static/img/users/{nm}.png'))
             filenames.append(f'img/users/{nm}.png')
         else:
@@ -137,11 +131,12 @@ def process_users_images(images):
 def process_theme_images(images):
     filenames = []
     for im in images:
+        im2 = im.filename
         nm = secrets.token_urlsafe(16)
-        if im.title.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
+        if im2.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
             im.save(os.path.join(f'static/img/themes/{nm}.jpg'))
             filenames.append(f'img/themes/{nm}.jpg')
-        elif im.title.rsplit('.', 1)[1].lower() == 'png':
+        elif im2.rsplit('.', 1)[1].lower() == 'png':
             im.save(os.path.join(f'static/img/themes/{nm}.png'))
             filenames.append(f'img/themes/{nm}.png')
         else:
@@ -153,11 +148,12 @@ def process_theme_images(images):
 def process_comment_images(images):
     filenames = []
     for im in images:
+        im2 = im.filename
         nm = secrets.token_urlsafe(16)
-        if im.title.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
+        if im2.rsplit('.', 1)[1].lower() in ('jpg', 'jpeg'):
             im.save(os.path.join(f'static/img/comments/{nm}.jpg'))
             filenames.append(f'img/comments/{nm}.jpg')
-        elif im.title.rsplit('.', 1)[1].lower() == 'png':
+        elif im2.rsplit('.', 1)[1].lower() == 'png':
             im.save(os.path.join(f'static/img/comments/{nm}.png'))
             filenames.append(f'img/comments/{nm}.png')
         else:
@@ -211,7 +207,7 @@ def registration():
             email=form.email.data
         )
         if form.profile_pic.data:
-            profile_pic = process_users_images(secure_multiple([form.profile_pic.data]))
+            profile_pic = process_users_images([form.profile_pic.data])
             if profile_pic == 'error1':
                 return render_template("registration.html", form=form, error="Пароли не совпадают")
             user.profile_picture = profile_pic
@@ -272,8 +268,6 @@ def add_news():
     if news_form.validate_on_submit():
         img = news_form.pictures.raw_data
         docx_file = news_form.text.data
-
-        img = secure_multiple(img)
         news_markup = process_docx_file(docx_file)
         if news_markup == 'docx_error':
             return render_template('add_news.html', title='News', news_form=news_form,
@@ -359,7 +353,7 @@ def add_theme():
         )
         chosen_genre = theme_form.genre.data
         if theme_form.image.data:
-            img = secure_multiple(theme_form.image.raw_data)
+            img = theme_form.image.raw_data
             image = process_theme_images(img)
             if image == 'error1':
                 return render_template('add_theme.html', title='Add_theme',
@@ -549,8 +543,6 @@ def edit_news(news_id):
         if chosen_news:
             img = news_form.pictures.raw_data
             docx_file = news_form.text.data
-
-            img = secure_multiple(img)
             news_markup = process_docx_file(docx_file)
             images = process_news_images(img, news_form.title.data, redact=True)
             if images == 'error1':
@@ -583,10 +575,10 @@ def edit_theme(theme_id):
             chosen_theme.content = theme_form.content.data
             chosen_genre = theme_form.genre.data
             if theme_form.image.data:
-                img = secure_multiple(theme_form.image.raw_data)
+                img = theme_form.image.raw_data
                 image = process_theme_images(img)
                 if image == 'error1':
-                    return render_template('add_news.html', title='Edit theme',
+                    return render_template('add_theme.html', title='Edit theme',
                                            news_form=theme_form, error='Unmatched image')
                 chosen_theme.image = image
             chosen_genre_id = db_sess.query(Genres).filter(Genres.title == chosen_genre).first()
@@ -594,8 +586,8 @@ def edit_theme(theme_id):
             db_sess.commit()
         else:
             abort(404)
-        return redirect('/all_news/0-10')
-    return render_template('add_news.html', title='Edit theme', news_form=theme_form)
+        return redirect('/all_themes/0-10')
+    return render_template('add_theme.html', title='Edit theme', news_form=theme_form)
 
 
 @app.route('/glossary')
