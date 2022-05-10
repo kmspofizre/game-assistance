@@ -941,7 +941,7 @@ def nothing_yet(type_n):
 def main():
     db_session.global_init("db/blogs.db")
     append_genres()
-    serve(app, host='0.0.0.0', port=5000)
+    serve(app, host='127.0.0.1', port=5000)
 
 
 if __name__ == '__main__':
