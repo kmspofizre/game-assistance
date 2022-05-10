@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Add moder form</h2>
+    <form action="" method="post">
+        {{ add_moder_form.hidden_tag() }}
+        <p>
+            {{ add_moder_form.email.label }}<br>
+            {{ add_moder_form.email(class="form-control") }}
+            {% for error in add_moder_form.email.errors %}
+              <div class="alert alert-danger" role="alert">
+                  {{ error }}
+              </div>
+            {% endfor %}
+        </p>
+        <p>{{ add_moder_form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+    <div style="text-align: center;">{{ mod_error }}</div>
+{% endblock %}

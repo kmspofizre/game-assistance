@@ -17,7 +17,6 @@ def send_email(email, subjects, text, attachments):
     msg['To'] = email
     msg['Subject'] = subjects
     msg_text = f"Hello!\nYou need to verify your mail\nHere is the link:\n{text}"
-    print(text)
     msg_html = f"""\
     <html>
       <head></head>

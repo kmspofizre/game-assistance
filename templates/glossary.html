@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="main">
+    <div class="row">
+        <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
+            <div class="trads">
+                <div class="dropdown">
+                    <a class="btn btn-info dropdown-toggle" href="#"
+                       role="button" id="dropdownMenuLink"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Жанры
+                    </a>
+                    <ul class="dropdown-menu"
+                        aria-labelledby="dropdownMenuLink">
+                        {% for genre in genres_mp %}
+                        <li><a class="dropdown-item"
+                               href="http://127.0.0.1:5000/themes_by_genre/{{genre.id}}/0-10">{{
+                            genre.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="other-links">
+                    {% for trad in trads %}
+                    <a href="http://127.0.0.1:5000/themes/{{trad.id}}/0-10">
+                        {{trad.title}}</a>
+                    <br>
+                    {% endfor %}
+                    <a href="http://127.0.0.1:5000/glossary">Glossary</a>
+                    <br>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_news/0-10">News</a>
+                    <br>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
+            <div class="glossary">
+                {% for genre in genres %}
+                <div class="single-description">
+                    <div class="single-description-ins">
+                        <p>
+                            <span style="font-size: 20px; margin-right: 100px;">{{ genre.title }}</span><button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{genre.title}}" aria-expanded="false" aria-controls="collapse{{genre.title}}">
+                                Description
+                              </button>
+                        </p>
+                    </div>
+                    <div style="min-height: 120px;">
+                        <div class="collapse collapse-horizontal" id="collapse{{genre.title}}" data-toggle="collapse">
+                           <div class="card card-body" style="width: 300px;">
+                                 {{genre.description}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

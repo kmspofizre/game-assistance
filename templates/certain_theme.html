@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<script>("clearButton").onclick = function(e) {
+    document.getElementById("textInput").value = "";
+  }
+</script>
+<div class="certain-theme">
+    <div class="row">
+        <div class="col-xs-0 cols-sm-4 col-md-4 col-lg-4">
+            <div class="trads">
+                <div class="dropdown">
+                    <a class="btn btn-info dropdown-toggle" href="#"
+                       role="button" id="dropdownMenuLink"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Жанры
+                    </a>
+                    <ul class="dropdown-menu"
+                        aria-labelledby="dropdownMenuLink">
+                        {% for genre in genres %}
+                        <li><a class="dropdown-item"
+                               href="http://127.0.0.1:5000/themes_by_genre/{{genre.id}}/0-10">{{
+                            genre.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="other-links">
+                    {% for trad in trads %}
+                    <a href="http://127.0.0.1:5000/themes/{{trad.id}}/0-10">
+                        {{trad.title}}</a>
+                    <br>
+                    {% endfor %}
+                    <a href="http://127.0.0.1:5000/glossary">Glossary</a>
+                    <br>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_news/0-10">News</a>
+                    <br>
+                    <a class="show-on-sm"
+                       href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
+            <div class="theme-container">
+                <div class="theme-intro">
+                    {% if theme_image_exists %}
+                    <h3>{{ theme.description }}</h3>
+                    <span>{{ theme.content }}</span><br>
+                    <img {{ theme_image }} style="width: 100%; height: 100%; margin-bottom: 10px; margin-top: 10px;">
+                    {% else %}
+                    <h3>{{ theme.description }}</h3>
+                    <span>{{ theme.content }}</span>
+                    {% endif %}
+                    <br>
+                    <span>Дата публикации - {{ time }}</span>
+                </div>
+                {% if current_user.confirmed %}
+                <form action="" method="post" enctype="multipart/form-data">
+                    {{ theme_reply.hidden_tag() }}
+                    <p style="margin-bottom: 5px;">
+                        {{ theme_reply.comment_text.label }}<br>
+                        {{ theme_reply.comment_text(class="form-control", value='', id="textInput") }}
+                        {% for error in theme_reply.comment_text.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </p>
+                    <p style="margin-bottom: 5px;">
+                        {{ theme_reply.comment_image(class="form-control", type="file") }}
+                        {% for error in theme_reply.comment_image.errors %}
+                          <div class="alert alert-danger" role="alert">
+                              {{ error }}
+                          </div>
+                        {% endfor %}
+                      </p>
+                      <p>{{ theme_reply.submit(type="submit", class="btn btn-primary", id="clearButton") }}</p>
+                </form>
+                {% else %}
+                <div style="text-align:center;">Чтобы учавствовать в обсуждении, подтвердите аккаунт</div>
+                {% endif %}
+                {% for comment in comments %}
+                    <div class="comment-cont">
+                        <span style="font-size: 20px; margin-bottom: 5px;"><strong>{{ users[loop.index0] }}</strong></span>&emsp;<span style="margin-bottom: 5px;">{{comment.date_of_creation}}</span><br>
+                        <span style="margin-bottom: 5px;">{{ comment.content }}</span>
+                        {% if comment.image %}
+                        <br>
+                        <img {{images[loop.index0]}} style="width: 50%; height: 50%; margin-top: 5px;">
+                        {% endif %}
+                        {% if current_user.id == comment.user_id or current_user.special_access %}
+                        <div style="margin-top: 5px; margin-bottom: 5px;">
+                            <a
+                                    href="http://127.0.0.1:5000/delete_comment/{{ theme.id }}/{{ comment.id }}" ><button type="button" class="btn btn-outline-danger">Delete</button></a>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            <div class="switcher">
+                {% if left_dis %}
+                <a disabled> &lt;&lt; </a>
+                {% else %}
+                <a {{ left_href }} > &lt;&lt; </a>
+                {% endif %}
+                &emsp;{{ current_page }}&emsp;
+                {% if right_dis %}
+                <a disabled> &gt;&gt; </a>
+                {% else %}
+                <a {{ right_href }} > &gt;&gt; </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

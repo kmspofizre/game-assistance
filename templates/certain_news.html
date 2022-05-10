@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="news-contt">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <div class="news-contt">
     {% if lenght == 3 %}
     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
@@ -10,6 +10,9 @@
           </div>
           <div class="carousel-item">
             <img {{ images[1] }} class="d-block w-100">
+          </div>
+            <div class="carousel-item">
+            <img {{ images[2] }} class="d-block w-100">
           </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
@@ -46,5 +49,7 @@
         </div>
     {% endif %}
     {{ text | safe }}
+    <br>
+    <span>Дата публикации: {{ time }}</span>
     </div>
 {% endblock %}

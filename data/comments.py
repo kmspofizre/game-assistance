@@ -9,8 +9,8 @@ class Comment(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, autoincrement=True, primary_key=True)
     content = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    image = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # json
-    date_of_creation = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
+    image = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    date_of_creation = sqlalchemy.Column(sqlalchemy.String, default=datetime.now)
 
     main_theme_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("theme.id"))
