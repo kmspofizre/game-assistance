@@ -1,0 +1,8 @@
+SQLAlchemy~=1.4.35
+Werkzeug~=2.1.1
+WTForms~=3.0.1
+schedule~=1.1.0
+Flask~=2.1.1
+python-dotenv~=0.20.0
+Pillow~=7.1.0
+docx~=0.2.4
