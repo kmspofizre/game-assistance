@@ -207,7 +207,7 @@ def append_genres():
                     " Альтернативный термин soulsborne представляет собой словослияние"
                     " серии Souls и видеоигры Bloodborne за авторством тех же FromSoftware и Миядзаки."]
     for i in range(len(genres)):
-        if not db_sess.query(Genres).filter(Genres.title == genres[i]):
+        if not db_sess.query(Genres).filter(Genres.title == genres[i]).all():
             genre = Genres(
                 title=genres[i],
                 description=descriptions[i]
@@ -941,7 +941,7 @@ def nothing_yet(type_n):
 def main():
     db_session.global_init("db/blogs.db")
     append_genres()
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0')
 
 
 if __name__ == '__main__':
