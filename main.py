@@ -941,7 +941,7 @@ def nothing_yet(type_n):
 def main():
     db_session.global_init("db/blogs.db")
     append_genres()
-    app.run(host='0.0.0.0')
+    app.run(host="0.0.0.0")
 
 
 if __name__ == '__main__':

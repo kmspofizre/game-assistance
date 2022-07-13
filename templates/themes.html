@@ -13,31 +13,31 @@
                         aria-labelledby="dropdownMenuLink">
                         {% for genre in genres %}
                         <li><a class="dropdown-item"
-                               href="http://127.0.0.1:5000/themes_by_genre/{{genre.id}}/0-10">{{
+                               href="http://51.250.89.77/themes_by_genre/{{genre.id}}/0-10">{{
                             genre.title }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
                 <div class="other-links">
                     {% for trad in trads %}
-                    <a href="http://127.0.0.1:5000/themes/{{trad.id}}/0-10">
+                    <a href="http://51.250.89.77/themes/{{trad.id}}/0-10">
                         {{trad.title}}</a>
                     <br>
                     {% endfor %}
-                    <a href="http://127.0.0.1:5000/glossary">Glossary</a>
+                    <a href="http://51.250.89.77/glossary">Glossary</a>
                     <br>
                     <a class="show-on-sm"
-                       href="http://127.0.0.1:5000/all_news/0-10">News</a>
+                       href="http://51.250.89.77/all_news/0-10">News</a>
                     <br>
                     <a class="show-on-sm"
-                       href="http://127.0.0.1:5000/all_themes/0-10">Trads</a>
+                       href="http://51.250.89.77/all_themes/0-10">Trads</a>
                 </div>
         </div>
     </div>
     <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8">
         <div class="themes-side">
             {% for theme in themes %}
-            <a href="http://127.0.0.1:5000/themes/{{ theme.id }}/0-10" style="text-decoration: none; color: black;">
+            <a href="http://51.250.89.77/themes/{{ theme.id }}/0-10" style="text-decoration: none; color: black;">
                 <div class="theme-block">
                     <h3>{{ theme.title }}</h3><br>
                     <span>{{ theme.description }}</span>
@@ -45,8 +45,8 @@
             </a>
             {% if current_user.id == theme.user_id or current_user.special_access %}
                 <div style="margin-top: 10px; margin-bottom: 10px;">
-                <a href="http://127.0.0.1:5000/delete_theme/{{ theme.id }}" ><button type="button" class="btn btn-outline-danger">Delete</button></a>
-                <a href="http://127.0.0.1:5000/edit_theme/{{ theme.id }}"><button type="button" class="btn btn-outline-warning">Redact</button></a>
+                <a href="http://51.250.89.77/delete_theme/{{ theme.id }}" ><button type="button" class="btn btn-outline-danger">Delete</button></a>
+                <a href="http://51.250.89.77/edit_theme/{{ theme.id }}"><button type="button" class="btn btn-outline-warning">Redact</button></a>
                 </div>
                 {% endif %}
             {% endfor %}
