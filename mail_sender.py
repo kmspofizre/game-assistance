@@ -24,7 +24,7 @@ def send_email(email, subjects, text, attachments):
         <div style="text-align:center; font-family: sans-serif;">
             <span style="font-size: 25px;">Hello!</span><br>
             <span style="font-size: 18px">You need to verify your account -
-             <a href="http://127.0.0.1:5000/check_email/{text}">link</a></span>
+             <a href="http://51.250.89.77/check_email/{text}">link</a></span>
         </div>
       </body>
     </html>
