@@ -518,26 +518,26 @@ def all_news(news_range):
     try:
         showing_range_right_edge > news_to_show[0].id
     except IndexError:
-        return redirect('http://51.250.89.77/nothing_yet/news')
+        return redirect('https://game-assistance.ru/nothing_yet/news')
     if page == 1 and showing_range_right_edge >= news_to_show[0].id:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = True
     elif page == 1:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = False
-        right_switch_button_params['right_href'] = f"href=http://51.250.89.77/all_news/" \
+        right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/all_news/" \
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
     elif showing_range_right_edge >= news_to_show[0].id:
         left_switch_button_params['left_dis'] = False
         right_switch_button_params['right_dis'] = True
-        left_switch_button_params['left_href'] = f"href=http://51.250.89.77/all_news/" \
+        left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/all_news/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     else:
         left_switch_button_params['left_dis'] = False
         right_switch_button_params['right_dis'] = False
-        right_switch_button_params['right_href'] = f"href=http://51.250.89.77/all_news/" \
+        right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/all_news/" \
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
-        left_switch_button_params['left_href'] = f"href=http://51.250.89.77/all_news/" \
+        left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/all_news/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     print(news_to_show)
     print(images)
@@ -604,7 +604,7 @@ def all_themes(themes_range):
             print("IndexError")
             break
     if not themes_to_show:
-        return redirect('http://51.250.89.77/nothing_yet/themes')
+        return redirect('https://game-assistance.ru/nothing_yet/themes')
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
@@ -619,19 +619,19 @@ def all_themes(themes_range):
     elif page == 1:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = False
-        right_switch_button_params['right_href'] = f"href=http://51.250.89.77/all_themes/" \
+        right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
     elif max_page == page:
         left_switch_button_params['left_dis'] = False
         right_switch_button_params['right_dis'] = True
-        left_switch_button_params['left_href'] = f"href=http://51.250.89.77/all_themes/" \
+        left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     else:
         left_switch_button_params['left_dis'] = False
         right_switch_button_params['right_dis'] = False
-        right_switch_button_params['right_href'] = f"href=http://51.250.89.77/all_themes/" \
+        right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
-        left_switch_button_params['left_href'] = f"href=http://51.250.89.77/all_themes/" \
+        left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     return render_template('themes.html', themes=themes_to_show, title='All themes',
                            current_page=page, **right_switch_button_params, genres=list(db_sess.query(Genres).all()),
@@ -662,7 +662,7 @@ def themes_sorted_by_genre(genre_id, themes_range):
     for elem in list_of_themes:
         themes_to_show.append(elem[0])
     if not themes_to_show:
-        return redirect('http://51.250.89.77/nothing_yet/themes')
+        return redirect('https://game-assistance.ru/nothing_yet/themes')
     page = showing_range_right_edge // 10
     left_switch_button_params = {}
     right_switch_button_params = {}
@@ -677,19 +677,19 @@ def themes_sorted_by_genre(genre_id, themes_range):
     elif page == 1:
         left_switch_button_params['left_dis'] = True
         right_switch_button_params['right_dis'] = False
-        right_switch_button_params['right_href'] = f"href=http://51.250.89.77/all_themes/" \
+        right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
     elif max_page == page:
         left_switch_button_params['left_dis'] = False
         right_switch_button_params['right_dis'] = True
-        left_switch_button_params['left_href'] = f"href=http://51.250.89.77/all_themes/" \
+        left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     else:
         left_switch_button_params['left_dis'] = False
         right_switch_button_params['right_dis'] = False
-        right_switch_button_params['right_href'] = f"href=http://51.250.89.77/all_themes/" \
+        right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                    f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
-        left_switch_button_params['left_href'] = f"href=http://51.250.89.77/all_themes/" \
+        left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/all_themes/" \
                                                  f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     return render_template('themes.html', themes=themes_to_show, title='All themes',
                            genres=list(db_sess.query(Genres).all()),
@@ -726,11 +726,11 @@ def theme(theme_id, comments_range):
         if theme_image.filename != '':
             comment_im = process_comment_images(theme_reply.comment_image.raw_data)
             if comment_im == 'error1':
-                return redirect(f'http://51.250.89.77/themes/1/0-10')
+                return redirect(f'https://game-assistance.ru/themes/1/0-10')
             new_comment.image = comment_im
         db_sess.add(new_comment)
         db_sess.commit()
-        return redirect(f'http://51.250.89.77/themes/1/0-10')
+        return redirect(f'https://game-assistance.ru/themes/1/0-10')
 
     showing_range_left_edge, showing_range_right_edge = map(int, comments_range.split('-'))
     chosen_theme = db_sess.query(Theme).filter(Theme.id == theme_id).first()
@@ -755,19 +755,19 @@ def theme(theme_id, comments_range):
         elif page == 1:
             left_switch_button_params['left_dis'] = True
             right_switch_button_params['right_dis'] = False
-            right_switch_button_params['right_href'] = f"href=http://51.250.89.77/themes/{theme_id}/" \
+            right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/themes/{theme_id}/" \
                                                        f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
         elif showing_range_right_edge >= comments_for_theme[0].id:
             left_switch_button_params['left_dis'] = False
             right_switch_button_params['right_dis'] = True
-            left_switch_button_params['left_href'] = f"href=http://51.250.89.77/themes/{theme_id}/" \
+            left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/themes/{theme_id}/" \
                                                      f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
         else:
             left_switch_button_params['left_dis'] = False
             right_switch_button_params['right_dis'] = False
-            right_switch_button_params['right_href'] = f"href=http://51.250.89.77/themes/{theme_id}/" \
+            right_switch_button_params['right_href'] = f"href=https://game-assistance.ru/themes/{theme_id}/" \
                                                        f"{showing_range_left_edge + 10}-{showing_range_right_edge + 10}"
-            left_switch_button_params['left_href'] = f"href=http://51.250.89.77/themes/{theme_id}/" \
+            left_switch_button_params['left_href'] = f"href=https://game-assistance.ru/themes/{theme_id}/" \
                                                      f"{showing_range_left_edge - 10}-{showing_range_right_edge - 10}"
     except IndexError:
         left_switch_button_params['left_dis'] = True
